@@ -5,7 +5,7 @@ npyscreen. They may also serve as references for designing new forms.
 """
 
 from . import Form
-from ..widgets import BorderBox, Widget
+from ..widgets import BorderBox
 
 import logging
 log = logging.getLogger('npyscreen2.forms.traditional')
@@ -91,7 +91,6 @@ class TraditionalForm(Form):
         #max_y, max_x = self.max_physical()
         #self.border.max_height = max_y
         #self.border.max_width = max_x
-
 
     def update(self):
         self.border._update()

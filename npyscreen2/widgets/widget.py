@@ -530,8 +530,18 @@ class Widget(InputHandler, LinePrinter):
         """
         return False
 
-    #Adding these functions to the Widget base is sort of a big deal change from
-    #the original npyscreen, but I really want to see how it goes
+    def parent_borders(self, margins=True):
+        #parent_y_top
+        p_y_t = self.parent.rely
+        #parent_y_bottom
+        p_y_b = self.parent.rely + self.parent.height - 1
+        #parent_x_left
+        p_x_l = self.parent.relx
+        #parent_x_right
+        p_x_r = self.parent.relx + self.parent.width - 1
+        #These are index values
+        return p_y_t, p_y_b, p_x_l, p_x_r
+
     def addch(self, y, x, ch, attr=None):
         """
         Paint character ch at (y, x) with attributes attr, overwriting any
@@ -543,44 +553,56 @@ class Widget(InputHandler, LinePrinter):
         documentation mentions a character.) The built-in ord() is handy for
         conveying strings to codes.
         """
-        #addch is not forgiving if it attempts to write outside the pad...
-        try:
-            if attr is None:
-                if sys.version_info[:3] == (3, 4, 0):
-                    self.form.curses_pad.addch(x, y, ch)
-                else:
-                    self.form.curses_pad.addch(y, x, ch)
+        #Do nothing if either of the indices are outside the parent borders
+        p_y_t, p_y_b, p_x_l, p_x_r = self.parent_borders()
+        log.debug('addch called: y={}, x={}, ch={}'.format(y, x, ch))
+        log.debug('p_y_t={}, p_y_b={}, p_x_l={}, p_x_r={}'.format(p_y_t, p_y_b, p_x_l, p_x_r))
+        if y < p_y_t or y > p_y_b:
+            return False
+        elif x < p_x_l or x > p_x_r:
+            return False
+        #try:
+        if attr is None:
+            if sys.version_info[:3] == (3, 4, 0):
+                self.form.curses_pad.addch(x, y, ch)
             else:
-                if sys.version_info[:3] == (3, 4, 0):
-                    self.form.curses_pad.addch(x, y, ch, attr)
-                else:
-                    self.form.curses_pad.addch(y, x, ch, attr)
-        except curses.error:
-            log.warning('addch failed! y={}, x={}, ch={} attr={}'.format(y, x, ch, attr))
+                self.form.curses_pad.addch(y, x, ch)
+        else:
+            if sys.version_info[:3] == (3, 4, 0):
+                self.form.curses_pad.addch(x, y, ch, attr)
+            else:
+                self.form.curses_pad.addch(y, x, ch, attr)
+        #except curses.error:
+            #log.warning('addch failed! y={}, x={}, ch={} attr={}'.format(y, x, ch, attr))
 
     def addstr(self, y, x, string, attr=None):
         """
         Paint the string string at (y, x) with attributes attr, overwriting
         anything previously on the display.
         """
-        try:
-            if attr is None:
-                self.form.curses_pad.addstr(y, x, string)
-            else:
-                self.form.curses_pad.addstr(y, x, string, attr)
-        except curses.error:
-            log.warning('addstr failed! y={}, x={}, string={}, attr={}'.format(y, x, string, attr))
-            log.warning('self.max_height={} self.max_width={}'.format(self.max_height, self.max_width))
 
-    def addnstr(self, y, x, string, n, attr=None):
-        """
-        Paint at most n characters of the string str at (y, x) with attributes
-        attr, overwriting anything previously on the display.
-        """
+        p_y_t, p_y_b, p_x_l, p_x_r = self.parent_borders()
+        if y < p_y_t or y > p_y_b:
+            return False
+
+        #try:
         if attr is None:
-            self.form.curses_pad.addstr(y, x, string, n)
+            self.form.curses_pad.addstr(y, x, string[:self.max_width])
         else:
-            self.form.curses_pad.addstr(y, x, string, n, attr)
+            self.form.curses_pad.addstr(y, x, string[:self.max_width], attr)
+        #except curses.error:
+            #log.warning('addstr failed! y={}, x={}, string={}, attr={}'.format(y, x, string, attr))
+            #log.warning('self.max_height={} self.max_width={}'.format(self.max_height, self.max_width))
+
+    #def addnstr(self, y, x, string, n, attr=None):
+        #"""
+        #Paint at most n characters of the string str at (y, x) with attributes
+        #attr, overwriting anything previously on the display.
+        #"""
+        #if attr is None:
+            #self.form.curses_pad.addstr(y, x, string, n)
+        #else:
+            #self.form.curses_pad.addstr(y, x, string, n, attr)
 
     def hline(self, y, x, ch, n):
         #if n == 0:

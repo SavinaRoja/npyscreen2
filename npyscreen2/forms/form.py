@@ -247,11 +247,20 @@ max_physical reports; height/lines={0}, width/cols={1}'''.format(max_y, max_x))
         elif self.auto_max_width:
             self.max_width = self.max_physical()[1]
 
+        self.height = self.max_height
+        self.width = self.max_width
+
         self.create_pad()
         self.resize()
         #Originally there was a call to parent_app.resize, I am not sure if this
         #is useful, but it can be added again if desired
         for widget in self.contained:
+            #As a rule, the Container should constrain the dimensions of its
+            #items to its own limits, less margins
+            widget.max_height = self.max_height - \
+                                (self.top_margin + self.bottom_margin)
+            widget.max_width = self.max_width - \
+                               (self.left_margin + self.right_margin)
             widget._resize()
         self.DISPLAY()
 

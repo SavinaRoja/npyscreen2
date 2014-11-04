@@ -25,6 +25,7 @@ class Container(Widget):
                  right_margin=None,
                  diagnostic=False,
                  cycle_widgets=False,
+                 hide_partially_visible=False,
                  *args,
                  **kwargs):
         super(Container, self).__init__(form, self, *args, **kwargs)
@@ -34,8 +35,10 @@ class Container(Widget):
         self._default_widget_id = 0
 
         self.diagnostic = diagnostic
+        self.hide_partially_visible = hide_partially_visible
 
         self.cycle_widgets = cycle_widgets
+        self.show_from_y, self.show_from_x = 0, 0
 
         self.margin = margin
         self.top_margin = top_margin
@@ -111,8 +114,6 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
 
         widget_proxy = weakref.proxy(widget)
 
-        #I considered putting this in a try statement to catch TypeError on
-        #unhashable values of widget_id, but I think it's better to choke on it
         if widget_id is not None:
             self.contained_map[widget_id] = widget_proxy
         else:
@@ -311,7 +312,7 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         self.edit_index = self.enter_edit_loop()
 
         self.edit_index = self.enter_edit_loop()
-        log.debug('{0}.enter_edit_loop returned: {1}'.format(__class__,
+        log.debug('{0}.enter_edit_loop returned: {1}'.format(self.__class__,
                                                              self.edit_index))
         if self.edit_index is None:
             self.editing = False
@@ -369,32 +370,6 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
             #if self.edit_index > len(self.contained)-1:
                 #self.edit_index = len(self.contained)-1
 
-    #def on_screen(self):
-        ##is the widget in editw on sreen at the moment?
-        ##if not, alter screen so that it is.
-
-        #w = weakref.proxy(self._widgets__[self.editw])
-
-        #max_y, max_x = self._max_physical()
-
-        #w_my, w_mx = w.calculate_area_needed()
-
-        ## always try to show the top of the screen.
-        #self.show_from_y = 0
-        #self.show_from_x = 0
-
-        #while w.rely + w_my -1 > self.show_from_y + max_y:
-            #self.show_from_y += 1
-
-        #while w.rely < self.show_from_y:
-            #self.show_from_y -= 1
-
-        #while w.relx + w_mx -1 > self.show_from_x + max_x:
-            #self.show_from_x += 1
-
-        #while w.relx < self.show_from_x:
-            #self.show_from_x -= 1
-
     def create(self):
         """
         This method is called after instantiation of the Base Container
@@ -415,8 +390,14 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         """
         self.resize()
         for widget in self.contained:
+            #As a rule, the Container should constrain the dimensions of its
+            #items to its own limits, less margins
+            widget.max_height = self.max_height - \
+                                (self.top_margin + self.bottom_margin)
+            widget.max_width = self.max_width - \
+                               (self.left_margin + self.right_margin)
             widget._resize()
-        self.after_resizing_contained()
+        self._after_resizing_contained()
 
     def resize(self):
         """
@@ -435,10 +416,78 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         """
         pass
 
+    #A Container should be capable of determining if a Widget fits within the
+    #bounds of its available space based on the Widget's position (rely/relx)
+    #and dimensions (height/width). If a Widget is wholly outside the Container
+    #bounds, then it should be hidden. If a Widget is partially outside the
+    #Container bounds, then there are two options: display what fits, or hide
+    #the whole thing (same as if fully out of bounds).
+    #
+    #In the context of the Form as Container, the max_height and max_width
+    #correspond to the dimensions of the curses_pad; writing outside of this
+    #pad will cause an error. The pad may extend outside of the physical screen
+    #and writing to the pad that is not visible on the physical screen will not
+    #cause an error. Consequently there is no need to concern ourselves with
+    #additional checks of physical screen size for the sake of preventing
+    #errors. Though depending on the needs of specific interfaces, checks to
+    #the physical screen size may be needed for aesthetic or functional purposes
+    #and choosing between the two strategies described above for partially
+    #attenuated (by physical screen dimensions) Widgets may be required.
+    #
+    #This has an impact on how the Container resizing protocol is implemented.
+    #After every Widget has resized the Container must re-evaluate which of the
+    #Widgets are fully visible and which are not according to their height and
+    #width attributes, as these values may change during resize. This leads to
+    #the _after_resizing_contained method (which calls after_resizing_contained
+    #for extension) which does this check. Additionally, the pad writing
+    #methods are equipped with evaluations to ensure they do not write past the
+    #space available to them.
+
+    def _after_resizing_contained(self):
+        """
+        This method is performed by the container after it has finished resizing
+        the contained widgets. The internal method, which generally should not
+        be overridden, determines which contained Widgets are currently visible
+        within the container, and which are not.
+
+        If self.hide_partially_visible is True, then this will set Widgets whose
+        bounds are only partly inside the Container to be hidden, otherwise it
+        will not modify them.
+        """
+        #avail_height = self.max_height - (self.top_margin + self.bottom_margin)
+        #avail_width = self.max_width - (self.left_margin + self.right_margin)
+        #container_y_top
+        c_y_t = self.rely + self.top_margin
+        #container_y_bottom
+        c_y_b = self.rely + self.height - self.bottom_margin - 1
+        #container_x_left
+        c_x_l = self.relx + self.left_margin
+        #container_x_right
+        c_x_r = self.relx + self.width - self.left_margin
+        for widget in self.contained:
+            #widget_y_top, widget_y_bottom
+            w_y_t, w_y_b = widget.rely, widget.rely + widget.height - 1
+            #widget_x_left, widget_x_right
+            w_x_l, w_x_r = widget.relx, widget.relx + widget.width - 1
+
+            #Determines if widget is fully outside of container
+            if w_y_t > c_y_b or w_y_b < c_y_t or w_x_l > c_x_r or w_x_r < c_x_l:
+                widget.hidden = True  # In which case we hide the widget
+            #Determine if widget is fully within container
+            elif w_y_t >= c_y_t and w_y_b <= c_y_b and w_x_l >= c_x_l and \
+                 w_x_r <= c_x_r:
+                pass  # In which case we do nothing
+            #Widget is only partly visible if the previous are False
+            else:
+                if self.hide_partially_visible:
+                    widget.hidden = True
+
+        self.after_resizing_contained()
+
     def after_resizing_contained(self):
         """
-        A potentially useful method for doing resize actions *after* the
-        contained items have resized.
+        The external method for adding function to be executed after the
+        contained widgets have been resized. Override this freely.
         """
         pass
 
