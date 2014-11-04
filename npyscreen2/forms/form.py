@@ -262,6 +262,7 @@ max_physical reports; height/lines={0}, width/cols={1}'''.format(max_y, max_x))
             widget.max_width = self.max_width - \
                                (self.left_margin + self.right_margin)
             widget._resize()
+        self._after_resizing_contained()
         self.DISPLAY()
 
     def DISPLAY(self):

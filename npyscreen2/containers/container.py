@@ -471,16 +471,20 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
             w_x_l, w_x_r = widget.relx, widget.relx + widget.width - 1
 
             #Determines if widget is fully outside of container
+            log.debug('w_y_t={}, w_y_b={}, w_x_l={}, w_x_r={}'.format(w_y_t, w_y_b, w_x_l, w_x_r))
+            log.debug('c_y_t={}, c_y_b={}, c_x_l={}, c_x_r={}'.format(c_y_t, c_y_b, c_x_l, c_x_r))
             if w_y_t > c_y_b or w_y_b < c_y_t or w_x_l > c_x_r or w_x_r < c_x_l:
                 widget.hidden = True  # In which case we hide the widget
             #Determine if widget is fully within container
             elif w_y_t >= c_y_t and w_y_b <= c_y_b and w_x_l >= c_x_l and \
                  w_x_r <= c_x_r:
-                pass  # In which case we do nothing
+                widget.hidden = False  # In which case we ensure not hidden
             #Widget is only partly visible if the previous are False
             else:
                 if self.hide_partially_visible:
                     widget.hidden = True
+                else:
+                    widget.hidden = False
 
         self.after_resizing_contained()
 

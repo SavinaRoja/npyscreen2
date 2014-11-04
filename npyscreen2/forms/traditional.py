@@ -73,7 +73,7 @@ class TraditionalForm(Form):
         try:
             last_widget = self.contained[-1]
         except IndexError:
-            return self._latest_rely, self._latest_rely
+            return self._latest_rely, self._latest_relx
         else:
             self._latest_rely += last_widget.height
             return self._latest_rely, self._latest_relx
@@ -82,15 +82,6 @@ class TraditionalForm(Form):
         self.border.max_height = self.max_height
         self.border.max_width = self.max_width
         self.border.resize()
-
-    #def _resize(self, inpt=None):
-        #super(TraditionalForm, self)._resize(inpt=inpt)
-        #log.debug('TraditionalForm.resize called')
-        #This allows the max dimensions of the border to be pinned to the
-        #window size rather than the curses_pad size
-        #max_y, max_x = self.max_physical()
-        #self.border.max_height = max_y
-        #self.border.max_width = max_x
 
     def update(self):
         self.border._update()
