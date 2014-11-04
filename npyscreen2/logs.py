@@ -41,12 +41,14 @@ def add_rotating_file_handler(filename,
                               level=None,
                               filtr=None,
                               max_bytes=0,
-                              backup_count=0):
+                              backup_count=0,
+                              mode='a'):
     log = logging.getLogger('npyscreen2')
     handler = logging.handlers.RotatingFileHandler(filename,
                                                    maxBytes=max_bytes,
                                                    backupCount=backup_count,
-                                                   encoding='utf-8')
+                                                   encoding='utf-8',
+                                                   mode=mode)
 
     if level is None:
         handler.setLevel(logging.WARNING)
