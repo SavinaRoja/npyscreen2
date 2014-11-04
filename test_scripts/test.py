@@ -13,16 +13,19 @@ import curses
 
 class TestApp(npyscreen2.App):
     def on_start(self):
-        self.main = self.add_form('MAIN', TestForm, height=30, width=100)
+        self.main = self.add_form(TestForm, 'MAIN', height=30, width=100)
+
 
 class TestForm(npyscreen2.Form):
     def __init__(self, *args, **kwargs):
         super(TestForm, self).__init__(*args, **kwargs)
-        self.max_box = self.add_widget(npyscreen2.BorderBox, preserve_instantiation_dimensions=False)
-        self.set_box = self.add_widget(npyscreen2.BorderBox, preserve_instantiation_dimensions=False)
+        self.max_box = self.add_widget(npyscreen2.BorderBox,
+                                       preserve_instantiation_dimensions=False)
+        self.set_box = self.add_widget(npyscreen2.BorderBox,
+                                       preserve_instantiation_dimensions=False)
         self.add_widget(npyscreen2.Widget)
-        self.auto_max_height=False
-        self.auto_max_width=False
+        self.auto_max_height = False
+        self.auto_max_width = False
 #        self.add_widget(npyscreen2.Widget)
 
 #    def update(self):
@@ -35,7 +38,6 @@ class TestForm(npyscreen2.Form):
         self.set_box.max_height = self.height
         self.set_box.max_width = self.width
         pass
-
 
     def post_edit(self):
         self.exit_application()
@@ -51,6 +53,7 @@ class TestForm(npyscreen2.Form):
 
     #def while_waiting(self):
         #self.display()
+
 
 class TestWidget(npyscreen2.Widget):
     def resize(self):

@@ -11,9 +11,14 @@ import npyscreen2
 import curses
 from time import strftime
 
+
 class TestApp(npyscreen2.App):
     def on_start(self):
-        self.main = self.add_form('MAIN', TestTraditional, framed=True, cycle_widgets=True)
+        self.main = self.add_form(TestTraditional,
+                                  'MAIN',
+                                  framed=True,
+                                  cycle_widgets=True)
+
 
 class TestTraditional(npyscreen2.TraditionalForm):
     def __init__(self, *args, **kwargs):
@@ -21,9 +26,10 @@ class TestTraditional(npyscreen2.TraditionalForm):
         for i in range(5):
             self.add_widget(TestWidget, value=str(i), height=1)
 
+
 class TestWidget(npyscreen2.Widget):
-#    def resize(self):
-#        self.inflate()
+    #def resize(self):
+        #self.inflate()
 
     def update(self):
         self.value = strftime("%H:%M:%S")

@@ -11,19 +11,25 @@ import npyscreen2
 import curses
 from time import strftime
 
+
 class TestApp(npyscreen2.App):
     def on_start(self):
-        self.main = self.add_form('MAIN', TestTraditional, framed=True, cycle_widgets=True)
+        self.main = self.add_form(TestTraditional,
+                                  'MAIN',
+                                  framed=True,
+                                  cycle_widgets=True)
+
 
 class TestTraditional(npyscreen2.TraditionalForm):
     def __init__(self, *args, **kwargs):
         super(TestTraditional, self).__init__(*args, **kwargs)
-        self.add_widget(TestWidget, value='spam is good what do you think? I could do this all the damn day')
+        self.add_widget(TestWidget, value='Test Text')
 
     def resize(self):
         for i in self.contained:
             i.max_height = self.max_height - 3
             i.max_width = self.max_width - 3
+
 
 class TestWidget(npyscreen2.TextField):
 
