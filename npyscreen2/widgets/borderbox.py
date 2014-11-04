@@ -23,7 +23,7 @@ class BorderBox(Widget):
                  *args, **kwargs):
         super(BorderBox, self).__init__(form,
                                         parent,
-                                        editable=editable
+                                        editable=editable,
                                         *args,
                                         **kwargs)
         self._top = top
