@@ -83,5 +83,11 @@ class TraditionalForm(Form):
         self.border.max_width = self.max_width
         self.border.resize()
 
+    #def _resize(self, inpt=None):
+        #self.border.max_height = self.max_height
+        #self.border.max_width = self.max_width
+        #self.border._resize()
+        #super(TraditionalForm, self)._resize(inpt=inpt)
+
     def update(self):
         self.border._update()
