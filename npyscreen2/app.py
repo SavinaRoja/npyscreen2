@@ -78,34 +78,34 @@ class NPSApp(object):
             return safe_wrapper.wrapper(self.__remove_argument_call_main,
                                         fork=fork)
 
-    def add_form_class(self, form_id, FormClass, *args, **kwargs):
-        log.debug('''NPSApp.add_form_class called: form_id={0}, FormClass={1} \
-args={2}, kwargs={3}'''.format(form_id, FormClass, args, kwargs))
-        self._Forms[form_id] = [FormClass, args, kwargs]
+    def add_form_class(self, form_class, form_id, *args, **kwargs):
+        log.debug('''NPSApp.add_form_class called: form_class={}, form_id={}, \
+args={}, kwargs={}'''.format(form_class, form_id, args, kwargs))
+        self._Forms[form_id] = [form_class, args, kwargs]
 
-    def add_form(self, form_id, FormClass, *args, **kwargs):
+    def add_form(self, form_class, form_id, *args, **kwargs):
         """
         Create a form of the given class. form_id should be a string which will
         niquely identify the form. *args and **kwargs will be passed to the Form
         constructor. Forms created in this way are handled entirely by the
         NPSAppManaged class.
         """
-        log.debug('''NPSApp.add_form called: form_id={0}, FormClass={1} \
-args={2}, kwargs={3}'''.format(form_id, FormClass, args, kwargs))
-        fm = FormClass(parent_app=self,
-                       keypress_timeout=self.keypress_timeout_default,
-                       *args,
-                       **kwargs)
-        self.register_form(form_id, fm)
-        return weakref.proxy(fm)
+        log.debug('''NPSApp.add_form called: form_id={0}, form_class={1} \
+args={2}, kwargs={3}'''.format(form_id, form_class, args, kwargs))
+        form = form_class(parent_app=self,
+                          keypress_timeout=self.keypress_timeout_default,
+                          *args,
+                          **kwargs)
+        self.register_form(form, form_id)
+        return weakref.proxy(form)
 
-    def register_form(self, form_id, fm):
+    def register_form(self, form, form_id):
         """
         form_id should be a string which should uniquely identify the form.
         fm should be a Form.
         """
         #fm.parent_app = weakref.proxy(self)
-        self._Forms[form_id] = fm
+        self._Forms[form_id] = form
         log.debug('New form registered: self._Forms={0}'.format(self._Forms))
 
     def remove_form(self, form_id):
