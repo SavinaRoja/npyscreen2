@@ -43,6 +43,7 @@ class Widget(InputHandler, LinePrinter):
                  max_width=None,
                  editable=True,
                  hidden=False,
+                 auto_manage=True,
                  color='DEFAULT',
                  check_value_change=True,
                  check_cursor_move=True,
@@ -63,7 +64,30 @@ class Widget(InputHandler, LinePrinter):
         self.check_value_change = check_value_change
         self.check_cursor_move = check_cursor_move
         self.cursor_position = None
+
+        #hidden serves as a flag which will exclude the Widget from updating
+        #during a Container update cycle if True. This flag should generally be
+        #managed by the parent
         self.hidden = hidden
+
+        #auto_coord serves as a flag which will exclude the widget from
+        #automatic positioning by the Container if False. In this case, the
+        #Container should possess custom logic for the positioning of this
+        #Widget in its resize method. Note that Containers oftn customize their
+        #general positioning for contained items, and this is intended to flag
+        #the Widget as a non-general item. This flag should generally be
+        #managed by the parent
+        #self.auto_coord = auto_coord
+        self.auto_manage = auto_manage
+
+        #auto_constrain, if True, indicates that the parent Container will
+        #automatically set the max_height/width of this Widget to its own
+        #max_height/width less margins. If False, then the parent Container
+        #should have custom logic for the setting of the max_height/width
+        #attributes of this Widget in its resize method. This flag should
+        #generally be managed by the parent
+        #self.auto_constrain = auto_constrain
+
         self.editable = editable
         self.value = value
         self._feed = None
@@ -385,6 +409,20 @@ class Widget(InputHandler, LinePrinter):
         Called when the cursor moves.
         """
         pass
+
+    def multi_set(self, rely=None, relx=None, max_height=None, max_width=None):
+        """
+        A convenience function for setting multiple values for size/placement at
+        once.
+        """
+        if rely is not None:
+            self.rely = rely
+        if relx is not None:
+            self.relx = relx
+        if max_height is not None:
+            self.max_height = max_height
+        if max_width is not None:
+            self.max_width = max_width
 
     @property
     def feed(self):

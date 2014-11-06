@@ -146,7 +146,7 @@ class Form(Container):
         self.min_width = min_width
 
         #Indicates that the entire pad is visible on screen
-        self.ALL_SHOWN = False
+        #self.ALL_SHOWN = False
 
         global APPLICATION_THEME_MANAGER
         if APPLICATION_THEME_MANAGER is None:
@@ -255,12 +255,6 @@ max_physical reports; height/lines={0}, width/cols={1}'''.format(max_y, max_x))
         #Originally there was a call to parent_app.resize, I am not sure if this
         #is useful, but it can be added again if desired
         for widget in self.contained:
-            #As a rule, the Container should constrain the dimensions of its
-            #items to its own limits, less margins
-            widget.max_height = self.max_height - \
-                                (self.top_margin + self.bottom_margin)
-            widget.max_width = self.max_width - \
-                               (self.left_margin + self.right_margin)
             widget._resize()
         self._after_resizing_contained()
         self.DISPLAY()
@@ -306,21 +300,30 @@ max_physical reports; height/lines={0}, width/cols={1}'''.format(max_y, max_x))
         #point. Suspect screen size not updated in time. This try: seems to
         #solve it with no ill effects.
         try:
-            self.curses_pad.refresh(self.show_from_y,
-                                    self.show_from_x,
-                                    self.show_aty,
-                                    self.show_atx,
+            #self.curses_pad.refresh(self.show_from_y,
+                                    #self.show_from_x
+                                    #self.show_aty,
+                                    #self.show_atx,
+                                    #max_y - 1,
+                                    #max_x - 1)
+            #It seems to me that by using show_from_y/x as a sort of index
+            #rectifier to be applied to contained widgets, I have essentially
+            #virtualized a lot of the curses pad stuff...
+            self.curses_pad.refresh(0,
+                                    0,
+                                    0,
+                                    0,
                                     max_y - 1,
                                     max_x - 1)
         except curses.error:
             pass
 
-        if self.show_from_y is 0 and self.show_from_x is 0 and \
-        (max_y >= self.pad_height) and (max_x >= self.pad_width):
-            self.ALL_SHOWN = True
+        #if self.show_from_y is 0 and self.show_from_x is 0 and \
+        #(max_y >= self.pad_height) and (max_x >= self.pad_width):
+            #self.ALL_SHOWN = True
 
-        else:
-            self.ALL_SHOWN = False
+        #else:
+            #self.ALL_SHOWN = False
 
     def erase(self):
         self.curses_pad.erase()

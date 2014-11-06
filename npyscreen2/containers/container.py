@@ -243,7 +243,8 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
             search = chain(search, self.contained[:self.edit_index])
 
         for widget in search:
-            if widget.editable and not widget.hidden:
+            if widget.editable:
+            #if widget.editable and not widget.hidden:
                 self.edit_index = self.contained.index(widget)
                 break
 
@@ -273,7 +274,8 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
             search = chain(search, self.contained[:self.edit_index: -1])
 
         for widget in search:
-            if widget.editable and not widget.hidden:
+            if widget.editable:
+            #if widget.editable and not widget.hidden:
                 self.edit_index = self.contained.index(widget)
                 break
 
@@ -310,8 +312,6 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
     def edit_loop(self):
         self.display()
         self.edit_index = self.enter_edit_loop()
-
-        self.edit_index = self.enter_edit_loop()
         log.debug('{0}.enter_edit_loop returned: {1}'.format(self.__class__,
                                                              self.edit_index))
         if self.edit_index is None:
@@ -321,6 +321,7 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         while self.editing:
             #Do check to get editing widget on screen
             selected = self.contained[self.edit_index]
+            self.bring_into_view()
             log.debug('selected for editing: {0}'.format(selected))
             self.while_editing(selected)
             if not self.editing:  # Because this may change in while_editing
@@ -370,6 +371,50 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
             #if self.edit_index > len(self.contained)-1:
                 #self.edit_index = len(self.contained)-1
 
+    def bring_into_view(self):
+        """
+        If the currently selected for editing Widget/Container is not currently
+        in the field of view of the Container/Form, then this should modify the
+        Container/Form's `show_from_y` and `show_from_x` attributes so that the
+        Widget is visible.
+        """
+        selected = self.contained[self.edit_index]
+        #There are different ways that this might be done, and perhaps they
+        #will be explored as options later. One option is to simply slide the
+        #viewing window so that the previously out of view Widget gets put into
+        #the top-left corner; this will give a more discretized page turning
+        #effect. Another way would be to only shift the view enough so that the
+        #widget fits fully onto the screen, this would result in a more gradual
+        #slide, like shifting columns or rows in a spreadsheet program. This
+        #implements the latter
+
+        c_top = self.rely + self.top_margin
+        c_bottom = self.rely + self.height - 1 - self.bottom_margin
+        c_left = self.relx + self.left_margin
+        c_right = self.relx + self.width - 1 - self.right_margin
+        sel_top = selected.rely
+        sel_bottom = selected.rely + selected.height - 1
+        sel_left = selected.relx
+        sel_right = selected.relx + selected.width - 1
+
+        modified = False
+        if sel_bottom > c_bottom:
+            modified = True
+            self.show_from_y += sel_bottom - c_bottom
+        elif sel_top < c_top:
+            modified = True
+            self.show_from_y -= c_top - sel_top
+
+        if sel_right > c_right:
+            modified = True
+            self.show_from_x += sel_right - c_right
+        elif sel_left < c_left:
+            modified = True
+            self.show_from_x -= c_left - sel_left
+
+        if modified:
+            self._resize()
+
     def create(self):
         """
         This method is called after instantiation of the Base Container
@@ -389,14 +434,12 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         placed in `_resize`.
         """
         self.resize()
+
+        self.set_coords()
+
         for widget in self.contained:
-            #As a rule, the Container should constrain the dimensions of its
-            #items to its own limits, less margins
-            widget.max_height = self.max_height - \
-                                (self.top_margin + self.bottom_margin)
-            widget.max_width = self.max_width - \
-                               (self.left_margin + self.right_margin)
             widget._resize()
+
         self._after_resizing_contained()
 
     def resize(self):
@@ -414,6 +457,9 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         not be necessary to call the `resize` method of the items in
         `self.contained`.
         """
+        pass
+
+    def set_coords(self):
         pass
 
     #A Container should be capable of determining if a Widget fits within the
@@ -454,16 +500,10 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         bounds are only partly inside the Container to be hidden, otherwise it
         will not modify them.
         """
-        #avail_height = self.max_height - (self.top_margin + self.bottom_margin)
-        #avail_width = self.max_width - (self.left_margin + self.right_margin)
-        #container_y_top
-        c_y_t = self.rely + self.top_margin
-        #container_y_bottom
-        c_y_b = self.rely + self.height - self.bottom_margin - 1
-        #container_x_left
-        c_x_l = self.relx + self.left_margin
-        #container_x_right
-        c_x_r = self.relx + self.width - self.left_margin
+        c_y_t = self.rely + self.top_margin  # container_y_top
+        c_y_b = self.rely + self.height - self.bottom_margin - 1  # container_y_bottom
+        c_x_l = self.relx + self.left_margin  # container_x_left
+        c_x_r = self.relx + self.width - self.left_margin - 1  # container_x_right
         for widget in self.contained:
             #widget_y_top, widget_y_bottom
             w_y_t, w_y_b = widget.rely, widget.rely + widget.height - 1
@@ -471,8 +511,6 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
             w_x_l, w_x_r = widget.relx, widget.relx + widget.width - 1
 
             #Determines if widget is fully outside of container
-            log.debug('w_y_t={}, w_y_b={}, w_x_l={}, w_x_r={}'.format(w_y_t, w_y_b, w_x_l, w_x_r))
-            log.debug('c_y_t={}, c_y_b={}, c_x_l={}, c_x_r={}'.format(c_y_t, c_y_b, c_x_l, c_x_r))
             if w_y_t > c_y_b or w_y_b < c_y_t or w_x_l > c_x_r or w_x_r < c_x_l:
                 widget.hidden = True  # In which case we hide the widget
             #Determine if widget is fully within container

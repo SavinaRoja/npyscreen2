@@ -47,11 +47,11 @@ max_height={4}, max_width={5}'''.format(self.rely, self.relx, self.height,
         vbar_length = self.height
         hbar_length = self.width
         ul_y, ul_x = self.rely, self.relx
-        if self._use_margins:
-            hbar_length -= (self.left_margin + self.right_margin)
-            vbar_length -= (self.top_margin + self.bottom_margin)
-            ul_y += self.top_margin
-            ul_x += self.left_margin
+        #if self._use_margins:
+            #hbar_length -= (self.left_margin + self.right_margin)
+            #vbar_length -= (self.top_margin + self.bottom_margin)
+            #ul_y += self.top_margin
+            #ul_x += self.left_margin
         #Draw the bars
         if self._top:
             self.hline(ul_y, ul_x,
