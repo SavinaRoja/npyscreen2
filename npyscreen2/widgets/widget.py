@@ -45,6 +45,10 @@ class Widget(InputHandler, LinePrinter):
                  hidden=False,
                  auto_manage=True,
                  color='DEFAULT',
+                 bold=False,
+                 underline=False,
+                 highlight=False,
+                 highlight_color='HIGHLIGHT',  # Used as color if highlight=True
                  check_value_change=True,
                  check_cursor_move=True,
                  preserve_instantiation_dimensions=True,
@@ -70,23 +74,14 @@ class Widget(InputHandler, LinePrinter):
         #managed by the parent
         self.hidden = hidden
 
-        #auto_coord serves as a flag which will exclude the widget from
+        #auto_manage serves as a flag which will exclude the widget from
         #automatic positioning by the Container if False. In this case, the
         #Container should possess custom logic for the positioning of this
         #Widget in its resize method. Note that Containers oftn customize their
         #general positioning for contained items, and this is intended to flag
         #the Widget as a non-general item. This flag should generally be
         #managed by the parent
-        #self.auto_coord = auto_coord
         self.auto_manage = auto_manage
-
-        #auto_constrain, if True, indicates that the parent Container will
-        #automatically set the max_height/width of this Widget to its own
-        #max_height/width less margins. If False, then the parent Container
-        #should have custom logic for the setting of the max_height/width
-        #attributes of this Widget in its resize method. This flag should
-        #generally be managed by the parent
-        #self.auto_constrain = auto_constrain
 
         self.editable = editable
 
@@ -113,7 +108,16 @@ class Widget(InputHandler, LinePrinter):
         self.relx = relx
         self.rely = rely
 
+        #The following attributes are intended to be abstracted traits which
+        #may be applied to how a widget is represented on the screen. Hopefully
+        #some day, we'll be able to support different text backends
         self.color = color
+        self.highlight = highlight
+        self.highlight_color = highlight_color
+        self.bold = bold
+        self.underline = underline
+        #If highlight is set, but colors are not available, then a Widget will
+        #will invert the two color values in use
 
         self.encoding = 'utf-8'
         self.editing = False
@@ -597,32 +601,27 @@ class Widget(InputHandler, LinePrinter):
         """
         #Do nothing if either of the indices are outside the parent borders
         p_y_t, p_y_b, p_x_l, p_x_r = self.parent_borders()
-        log.debug('addch called: y={}, x={}, ch={}'.format(y, x, ch))
-        log.debug('p_y_t={}, p_y_b={}, p_x_l={}, p_x_r={}'.format(p_y_t, p_y_b, p_x_l, p_x_r))
         if y < p_y_t or y > p_y_b:
             return False
         elif x < p_x_l or x > p_x_r:
             return False
-        #try:
+
         if attr is None:
-            if sys.version_info[:3] == (3, 4, 0):
-                self.form.curses_pad.addch(x, y, ch)
-            else:
-                self.form.curses_pad.addch(y, x, ch)
+            attr = self.get_text_attr()
+        if sys.version_info[:3] == (3, 4, 0):
+            self.form.curses_pad.addch(x, y, ch, attr)
         else:
-            if sys.version_info[:3] == (3, 4, 0):
-                self.form.curses_pad.addch(x, y, ch, attr)
-            else:
-                self.form.curses_pad.addch(y, x, ch, attr)
-        #except curses.error:
-            #log.warning('addch failed! y={}, x={}, ch={} attr={}'.format(y, x, ch, attr))
+            self.form.curses_pad.addch(y, x, ch, attr)
 
     def addstr(self, y, x, string, attr=None):
         """
-        Paint the string string at (y, x) with attributes attr, overwriting
+        Paint the string string at (y, x) with attributes `attr`, overwriting
         anything previously on the display.
-        """
 
+        If `attr` is used, it will be used explicitly with no modification. If
+        `attr` is unused, then it will be defined by the current theme and
+        attributes of the widget.
+        """
         p_y_t, p_y_b, p_x_l, p_x_r = self.parent_borders()
         #If the y is not within the parent's borders, we give up
         if y < p_y_t or y > p_y_b:
@@ -630,39 +629,37 @@ class Widget(InputHandler, LinePrinter):
         #if the x is to the right of the parent, we give up
         #if x > p_x_r:
             #return False
-        if attr is None:
-            self.form.curses_pad.addstr(y, x, string[:self.max_width])
-        else:
-            self.form.curses_pad.addstr(y, x, string[:self.max_width], attr)
-        #except curses.error:
-            #log.warning('addstr failed! y={}, x={}, string={}, attr={}'.format(y, x, string, attr))
-            #log.warning('self.max_height={} self.max_width={}'.format(self.max_height, self.max_width))
 
-    #def addnstr(self, y, x, string, n, attr=None):
-        #"""
-        #Paint at most n characters of the string str at (y, x) with attributes
-        #attr, overwriting anything previously on the display.
-        #"""
-        #if attr is None:
-            #self.form.curses_pad.addstr(y, x, string, n)
-        #else:
-            #self.form.curses_pad.addstr(y, x, string, n, attr)
+        if attr is None:
+            attr = self.get_text_attr()
+
+        self.form.curses_pad.addstr(y, x, string[:self.max_width], attr)
+
+    def get_text_attr(self):
+        attr = 0
+        if self.bold:
+            attr |= curses.A_BOLD
+        if self.underline:
+            attr |= curses.A_UNDERLINE
+        if self.do_colors():
+            if self.highlight:
+                attr |= self.form.theme_manager.find_pair(self,
+                                                          self.highlight_color)
+            else:
+                attr |= self.form.theme_manager.find_pair(self, self.color)
+        else:
+            attr |= curses.A_REVERSE
+        return attr
 
     def hline(self, y, x, ch, n):
-        #if n == 0:
-            #return False
-        try:
-            self.form.curses_pad.hline(y, x, ch, n)
-        except curses.error:
-            pass
+        attr = self.get_text_attr()
+        for i in range(n):
+            self.addch(y, x + i, ch, attr)
 
     def vline(self, y, x, ch, n):
-        #if n == 0:
-            #return False
-        try:
-            self.form.curses_pad.vline(y, x, ch, n)
-        except curses.error:
-            pass
+        attr = self.get_text_attr()
+        for i in range(n):
+            self.addch(y + i, x, ch, attr)
 
     @property
     def cursor_position(self):

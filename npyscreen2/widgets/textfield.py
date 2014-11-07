@@ -22,14 +22,15 @@ class TextField(Widget):
                  form,
                  parent,
                  value='',
-                 bold=False,
-                 underline=False,
-                 standout=False,
-                 reverse=False,
                  show_cursor=False,
+                 cursor_bold=False,
+                 cursor_color='CURSOR',
+                 cursor_underline=False,
+                 cursor_empty_character=' ',
+                 runoff_left=':',
+                 runoff_right=':',
                  #wrap_lines=False,  # Line wrapping is a nightmare for later
                  start_cursor_at_end=True,
-                 highlight_color='CURSOR',
                  highlight_whole_widget=False,
                  *args,
                  **kwargs):
@@ -39,19 +40,15 @@ class TextField(Widget):
                                         *args,
                                         **kwargs)
 
-        #Matches a line break
-        #self.re_line_break = re.compile('\\r?\\n|\\r')
+        self.runoff_left = runoff_left
+        self.runoff_right = runoff_right
 
-        #self.wrap_lines = wrap_lines
-        self.highlight_color = highlight_color
         self.highlight_whole_widget = highlight_whole_widget
 
-        #These correspond to curses character cell attributes that will be
-        #applied to the text display by this widget
-        self.bold = bold
-        self.underline = underline
-        self.standout = standout
-        self.reverse = reverse
+        self.cursor_bold = cursor_bold
+        self.cursor_color = cursor_color
+        self.cursor_underline = cursor_underline
+        self.cursor_empty_character = cursor_empty_character
 
         self._begin_at = 0
 
@@ -71,8 +68,8 @@ class TextField(Widget):
                                   curses.KEY_BACKSPACE: self.h_delete_left,
                                   curses.KEY_HOME: self.h_home,
                                   curses.KEY_END: self.h_end,
-                                  # mac os x curses reports DEL as escape oddly
-                                  # no solution yet
+                                  #mac os x curses reports DEL as escape oddly
+                                  #no solution yet
                                   "^K": self.h_erase_right,
                                   "^U": self.h_erase_left,
                                   })
@@ -85,41 +82,44 @@ class TextField(Widget):
 
     def _pre_edit(self):
         super(TextField, self)._pre_edit()
-        self.standout = True
+        #self.bold = True
         #Explicitly setting the behavior for an unset cursor_position
         if self.cursor_position is None:
             self.cursor_position = len(self.value)
 
     def _post_edit(self):
         super(TextField, self)._post_edit()
-        self.standout = False
+        #self.bold = False
         #Cause the widget to forget where the cursor was, and reset the begin
         self.cursor_position = None
         self.begin_at = 0
 
     def printable_value(self):
-        return self.value[self.begin_at:][:self.max_width]
+        if self.editable:
+            max_string_length = self.max_width - 1
+        else:
+            max_string_length = self.max_width
+        val = self.value[self.begin_at:]
+        if len(val) > max_string_length:
+            val = val[:max_string_length] + self.runoff_right
+        return val
+        #return self.value[self.begin_at:][:max_string_length]
 
     def update(self):
-        if self.bold:
-            self.form.curses_pad.attron(curses.A_BOLD)
-        if self.underline:
-            self.form.curses_pad.attron(curses.A_UNDERLINE)
-        if self.standout:
-            self.form.curses_pad.attron(curses.A_STANDOUT)
-        if self.reverse:
-            self.form.curses_pad.attron(curses.A_REVERSE)
+        if self.cursor_position is not None:
+            if self.cursor_position < self.begin_at:
+                self.begin_at = self.cursor_position
+            while self.cursor_position > self.begin_at + self.max_width - 1:
+                self.begin_at += 1
 
         self.addstr(self.rely, self.relx, self.printable_value())
 
-        self.form.curses_pad.attroff(curses.A_BOLD)
-        self.form.curses_pad.attroff(curses.A_UNDERLINE)
-        self.form.curses_pad.attroff(curses.A_STANDOUT)
-        self.form.curses_pad.attroff(curses.A_REVERSE)
-        self.form.curses_pad.bkgdset(' ', curses.A_NORMAL)
-        self.form.curses_pad.attrset(0)
         if self.editing:
             self.print_cursor()
+
+        if self.begin_at > 0:
+            self.addch(self.rely, self.relx, self.runoff_left)
+
 
     def print_cursor(self):
         # This needs fixing for Unicode multi-width chars.
@@ -135,19 +135,24 @@ class TextField(Widget):
         try:
             char_under_cur = self.value[self.cursor_position]
         except IndexError:
-            char_under_cur = ' '
-        #except TypeError:
-            #char_under_cur = ' '
+            char_under_cur = self.cursor_empty_character
+
+        attr = 0
+        if self.cursor_bold:
+            attr |= curses.A_BOLD
+        if self.cursor_underline:
+            attr |= curses.A_UNDERLINE
+
         if self.do_colors():
-            self.parent.addstr(self.rely,
-                               self.relx + self.cursor_position - self.begin_at,
-                               char_under_cur,
-                               self.form.theme_manager.find_pair(self, 'CURSOR'))
+            attr |= self.form.theme_manager.find_pair(self, self.cursor_color)
         else:
-            self.parent.addstr(self.rely,
-                               self.relx + self.cursor_position - self.begin_at,
-                               char_under_cur,
-                               curses.A_STANDOUT)
+            attr |= curses.A_REVERSE
+
+        self.addstr(self.rely,
+                    self.relx + self.cursor_position - self.begin_at,
+                    char_under_cur,
+                    attr)
+
 
     def h_addch(self, inpt):
         if self.editable:

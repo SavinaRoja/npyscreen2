@@ -43,39 +43,51 @@ max_height={4}, max_width={5}'''.format(self.rely, self.relx, self.height,
                                         self.width, self.max_height,
                                         self.max_width))
 
+    def clear(self, usechar=' '):
+        """
+        Blank the screen area used by this widget, ready for redrawing
+        """
+        self.print_borders(blank=True)
+
     def update(self):
+        self.print_borders()
+
+    def print_borders(self, blank=False):
+        if blank:
+            hbar_char = ' '
+            vbar_char = ' '
+            ul_c_char = ' '
+            ur_c_char = ' '
+            ll_c_char = ' '
+            lr_c_char = ' '
+        else:
+            hbar_char = curses.ACS_HLINE
+            vbar_char = curses.ACS_VLINE
+            ul_c_char = curses.ACS_ULCORNER
+            ur_c_char = curses.ACS_URCORNER
+            ll_c_char = curses.ACS_LLCORNER
+            lr_c_char = curses.ACS_LRCORNER
+
         vbar_length = self.height
         hbar_length = self.width
         ul_y, ul_x = self.rely, self.relx
-        #if self._use_margins:
-            #hbar_length -= (self.left_margin + self.right_margin)
-            #vbar_length -= (self.top_margin + self.bottom_margin)
-            #ul_y += self.top_margin
-            #ul_x += self.left_margin
+
         #Draw the bars
         if self._top:
-            self.hline(ul_y, ul_x,
-                       curses.ACS_HLINE, hbar_length)
+            self.hline(ul_y, ul_x, hbar_char, hbar_length)
         if self._bottom:
-            self.hline(ul_y + self.height - 1, ul_x,
-                       curses.ACS_HLINE, hbar_length)
+            self.hline(ul_y + self.height - 1, ul_x, hbar_char, hbar_length)
         if self._left:
-            self.vline(ul_y, ul_x,
-                       curses.ACS_VLINE, vbar_length)
+            self.vline(ul_y, ul_x, vbar_char, vbar_length)
         if self._right:
-            self.vline(ul_y, ul_x + self.width - 1,
-                       curses.ACS_VLINE, vbar_length)
+            self.vline(ul_y, ul_x + self.width - 1, vbar_char, vbar_length)
 
         #Draw the corners
         if self._top and self._left:
-            self.addch(ul_y, ul_x,
-                       curses.ACS_ULCORNER)
+            self.addch(ul_y, ul_x, ul_c_char)
         if self._top and self._right:
-            self.addch(ul_y, ul_x + self.width - 1,
-                       curses.ACS_URCORNER)
+            self.addch(ul_y, ul_x + self.width - 1, ur_c_char)
         if self._bottom and self._left:
-            self.addch(ul_y + self.height - 1, ul_x,
-                       curses.ACS_LLCORNER)
+            self.addch(ul_y + self.height - 1, ul_x, ll_c_char)
         if self._bottom and self._right:
-            self.addch(ul_y + self.height - 1, ul_x + self.width - 1,
-                       curses.ACS_LRCORNER)
+            self.addch(ul_y + self.height - 1, ul_x + self.width - 1, lr_c_char)
