@@ -65,15 +65,6 @@ class TraditionalForm(Form):
                                max_height=self.max_height,
                                max_width=self.max_width)
 
-    #def next_rely_relx(self):
-        #try:
-            #last_widget = self.contained[-1]
-        #except IndexError:
-            #return self._latest_rely, self._latest_relx
-        #else:
-            #self._latest_rely += last_widget.height
-            #return self._latest_rely, self._latest_relx
-
     def resize(self):
         #The border is independently managed to ensure that its max dimensions
         #match that of the container
