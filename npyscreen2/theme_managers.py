@@ -43,29 +43,32 @@ class ThemeManager(object):
      ('MAGENTA_WHITE',    curses.COLOR_MAGENTA,    curses.COLOR_WHITE),
      ('RED_WHITE',        curses.COLOR_RED,        curses.COLOR_WHITE),
      ('YELLOW_WHITE',     curses.COLOR_YELLOW,     curses.COLOR_WHITE),
+     ('BLUE_YELLOW',      curses.COLOR_BLUE,       curses.COLOR_YELLOW)
 )
 
-    default_colors = {
-        'DEFAULT'     : 'WHITE_BLACK',
-        'FORMDEFAULT' : 'WHITE_BLACK',
-        'NO_EDIT'     : 'BLUE_BLACK',
-        'STANDOUT'    : 'CYAN_BLACK',
-        'CURSOR'      : 'WHITE_BLACK',
-        'CURSOR_INVERSE': 'BLACK_WHITE',
-        'LABEL'       : 'GREEN_BLACK',
-        'LABELBOLD'   : 'WHITE_BLACK',
-        'CONTROL'     : 'YELLOW_BLACK',
-        'IMPORTANT'   : 'GREEN_BLACK',
-        'SAFE'        : 'GREEN_BLACK',
-        'WARNING'     : 'YELLOW_BLACK',
-        'DANGER'      : 'RED_BLACK',
-        'CRITICAL'    : 'BLACK_RED',
-        'GOOD'        : 'GREEN_BLACK',
-        'GOODHL'      : 'GREEN_BLACK',
-        'VERYGOOD'    : 'BLACK_GREEN',
-        'CAUTION'     : 'YELLOW_BLACK',
-        'CAUTIONHL'   : 'BLACK_YELLOW',
-    }
+    default_colors = {'DEFAULT': 'WHITE_BLACK',
+                      'FORMDEFAULT': 'WHITE_BLACK',
+                      'NO_EDIT': 'BLUE_BLACK',
+                      'STANDOUT': 'CYAN_BLACK',
+                      #HIGHLIGHT should stand out against DEFAULT
+                      'HIGHLIGHT': 'BLACK_WHITE',
+                      #CURSOR should stand out against HIGHLIGHT, it may also
+                      #stand out against DEFAULT
+                      'CURSOR': 'WHITE_BLACK',
+                      'LABEL': 'GREEN_BLACK',
+                      'LABELBOLD': 'WHITE_BLACK',
+                      'CONTROL': 'YELLOW_BLACK',
+                      'IMPORTANT': 'GREEN_BLACK',
+                      'SAFE': 'GREEN_BLACK',
+                      'WARNING': 'YELLOW_BLACK',
+                      'DANGER': 'RED_BLACK',
+                      'CRITICAL': 'BLACK_RED',
+                      'GOOD': 'GREEN_BLACK',
+                      'GOODHL': 'GREEN_BLACK',
+                      'VERYGOOD': 'BLACK_GREEN',
+                      'CAUTION': 'YELLOW_BLACK',
+                      'CAUTIONHL': 'BLACK_YELLOW',
+                      'TEST': 'BLUE_YELLOW'}
 
     def __init__(self):
         #curses.use_default_colors()
