@@ -26,5 +26,8 @@ from .forms import Form, set_theme, get_theme, TraditionalForm
 
 from .logs import activate_logging, add_rotating_file_handler
 
+from . import themes
+from . import theme_managers
+
 import logging
 logger = logging.getLogger('npyscreen2')

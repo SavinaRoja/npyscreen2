@@ -5,7 +5,7 @@ import sys
 import curses
 import curses.ascii
 import weakref
-from .. import global_options as GlobalOptions
+from .. import global_options
 
 from functools import wraps
 import locale
@@ -63,7 +63,7 @@ class Widget(InputHandler, LinePrinter):
 
         self.check_value_change = check_value_change
         self.check_cursor_move = check_cursor_move
-        self.cursor_position = None
+        self._cursor_position = None
 
         #hidden serves as a flag which will exclude the Widget from updating
         #during a Container update cycle if True. This flag should generally be
@@ -89,7 +89,11 @@ class Widget(InputHandler, LinePrinter):
         #self.auto_constrain = auto_constrain
 
         self.editable = editable
+
+        if value is None:
+            value = ''
         self.value = value
+
         self._feed = None
         if feed is not None:
             self.feed = feed
@@ -116,7 +120,7 @@ class Widget(InputHandler, LinePrinter):
         self.interested_in_mouse_even_when_not_editable =\
              interested_in_mouse_even_when_not_editable
 
-        if GlobalOptions.ASCII_ONLY or locale.getpreferredencoding() == 'US-ASCII':
+        if global_options.ASCII_ONLY or locale.getpreferredencoding() == 'US-ASCII':
             self._force_ascii = True
         else:
             self._force_ascii = False
@@ -195,7 +199,7 @@ class Widget(InputHandler, LinePrinter):
         """
         Returns True if the widget should try to paint in coloour.
         """
-        if curses.has_colors() and not GlobalOptions.DISABLE_ALL_COLORS:
+        if curses.has_colors() and not global_options.DISABLE_ALL_COLORS:
             return True
         else:
             return False
@@ -620,10 +624,12 @@ class Widget(InputHandler, LinePrinter):
         """
 
         p_y_t, p_y_b, p_x_l, p_x_r = self.parent_borders()
+        #If the y is not within the parent's borders, we give up
         if y < p_y_t or y > p_y_b:
             return False
-
-        #try:
+        #if the x is to the right of the parent, we give up
+        #if x > p_x_r:
+            #return False
         if attr is None:
             self.form.curses_pad.addstr(y, x, string[:self.max_width])
         else:
@@ -657,3 +663,19 @@ class Widget(InputHandler, LinePrinter):
             self.form.curses_pad.vline(y, x, ch, n)
         except curses.error:
             pass
+
+    @property
+    def cursor_position(self):
+        return self._cursor_position
+
+    @cursor_position.setter
+    def cursor_position(self, val):
+        #A value of None means this is *unset*, available for automatic shift
+        if val is None:
+            self._cursor_position = val
+            return
+        if val < 0:
+            val = 0
+        elif val > len(self.value):
+            val = len(self.value)
+        self._cursor_position = val

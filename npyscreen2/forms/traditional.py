@@ -52,9 +52,6 @@ class TraditionalForm(Form):
             self._left_bar = False
             self._right_bar = False
 
-        #self._latest_rely = self.rely + self.top_margin
-        #self._latest_relx = self.relx + self.left_margin
-
         self.border = self.add(BorderBox,
                                widget_id='border',
                                rely=0,
@@ -68,10 +65,6 @@ class TraditionalForm(Form):
                                max_height=self.max_height,
                                max_width=self.max_width)
 
-        #By setting these
-        #self._latest_rely = self.rely + self.top_margin
-        #self._latest_relx = self.relx + self.left_margin
-
     #def next_rely_relx(self):
         #try:
             #last_widget = self.contained[-1]
@@ -82,26 +75,27 @@ class TraditionalForm(Form):
             #return self._latest_rely, self._latest_relx
 
     def resize(self):
+        #The border is independently managed to ensure that its max dimensions
+        #match that of the container
         self.border.multi_set(rely=self.rely,
                               relx=self.relx,
                               max_height=self.max_height,
                               max_width=self.max_width)
 
+        #Implementing a vertically stacking container
+        #The widgets will be offset by the margins, and max_width will be
+        #constrained within the Container's width and margins
         self.cur_y = self.rely + self.top_margin - self.show_from_y
         self.cur_x = self.relx + self.left_margin - self.show_from_x
 
-        for widget in self.contained:
-            if widget.auto_manage:
-                #log.debug('setting rely to {}'.format(self.cur_y))
-                #log.debug('widget.height is {}'.format(widget.height))
-                #log.debug('self.show_from_y is {}'.format(self.show_from_y))
-                widget.rely = self.cur_y
-                widget.relx = self.cur_x
-                widget.max_height = self.max_height - self.top_margin - self.bottom_margin
-                widget.max_width = self.max_width - self.left_margin - self.right_margin
-                self.cur_y += widget.height
-                #self.cur_x += widget.width
-
+        for widget in (w for w in self.contained if w.auto_manage):
+            widget.rely = self.cur_y
+            widget.relx = self.cur_x
+            widget.max_height = self.height - self.top_margin - self.bottom_margin
+            widget.max_width = self.width - self.left_margin - self.right_margin
+            #widget.resize()
+            self.cur_y += widget.height
+            #self.cur_x += widget.width
 
 
     #def after_resizing_contained(self):

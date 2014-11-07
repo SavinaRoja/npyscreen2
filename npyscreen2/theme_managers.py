@@ -51,6 +51,7 @@ class ThemeManager(object):
         'NO_EDIT'     : 'BLUE_BLACK',
         'STANDOUT'    : 'CYAN_BLACK',
         'CURSOR'      : 'WHITE_BLACK',
+        'CURSOR_INVERSE': 'BLACK_WHITE',
         'LABEL'       : 'GREEN_BLACK',
         'LABELBOLD'   : 'WHITE_BLACK',
         'CONTROL'     : 'YELLOW_BLACK',
@@ -89,7 +90,7 @@ class ThemeManager(object):
 
         if request == 'DEFAULT':
             request = caller.color
-        # Locate the requested colour pair.  Default to default if not found.
+        #Locate the requested colour pair. Default to default if not found.
         try:
             pair = self._defined_pairs[self._names[request]]
         except:
@@ -110,12 +111,12 @@ class ThemeManager(object):
             if cp[0] == 'WHITE_BLACK':
                 #silently protect the user from breaking things.
                 continue
-            self.initalize_pair(cp[0], cp[1], cp[2])
+            self.initialize_pair(cp[0], cp[1], cp[2])
 
     def initialize_names(self):
         self._names.update(self.__class__.default_colors)
 
-    def initalize_pair(self, name, fg, bg):
+    def initialize_pair(self, name, fg, bg):
         #Initialize a color_pair for the required color and return the number.
         #Raise an exception if this is not possible.
         if (len(list(self._defined_pairs.keys())) + 1) == self._max_pairs:

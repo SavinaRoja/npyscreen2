@@ -405,12 +405,17 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
             modified = True
             self.show_from_y -= c_top - sel_top
 
+        log.debug('Before: self.show_from_x={}'.format(self.show_from_x))
         if sel_right > c_right:
             modified = True
             self.show_from_x += sel_right - c_right
+            log.debug('c_right={}, sel_right={}'.format(c_right, sel_right))
+            log.debug('After: self.show_from_x={}'.format(self.show_from_x))
         elif sel_left < c_left:
             modified = True
             self.show_from_x -= c_left - sel_left
+            log.debug('c_left={}, sel_left={}'.format(c_left, sel_left))
+            log.debug('After: self.show_from_x={}'.format(self.show_from_x))
 
         if modified:
             self._resize()

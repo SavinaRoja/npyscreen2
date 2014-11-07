@@ -24,7 +24,7 @@ class TextField(Widget):
                  value='',
                  bold=False,
                  underline=False,
-                 standout=True,
+                 standout=False,
                  reverse=False,
                  show_cursor=False,
                  #wrap_lines=False,  # Line wrapping is a nightmare for later
@@ -46,9 +46,6 @@ class TextField(Widget):
         self.highlight_color = highlight_color
         self.highlight_whole_widget = highlight_whole_widget
 
-        #Cursor position refers to (lines, columns)
-        self.cursor_position = 0
-
         #These correspond to curses character cell attributes that will be
         #applied to the text display by this widget
         self.bold = bold
@@ -56,54 +53,54 @@ class TextField(Widget):
         self.standout = standout
         self.reverse = reverse
 
-        self.begin_at = 0
+        self._begin_at = 0
 
         self.update()
 
-    #def update_values(self):
-        #"""
-        #This method updates the `values` attribute of TextField.
+    def set_up_handlers(self):
+            super(TextField, self).set_up_handlers()
 
-        #`values` should at all times be a generator function operating on the
-        #`value`
-        #"""
-        #def values_generator():
-            #index = 0
-            #while True:
-                #m = self.re_line_break.search(self.value[index:])
-                #if m is None:
-                    #yield self.value[index:]
-                    #break
-                #old_index, index = index, index + m.span()[1]
-                #yield self.value[old_index: old_index + m.span()[0]]
-        #self.values = values_generator()
+            #For OS X
+            #del_key = curses.ascii.alt('~')
 
-    #def lines_to_display_value(self):
-        #"""
-        #This method returns the number of lines it should take to display the
-        #text of self.value
-        #"""
-        ##Couldn't find a good tool for this, rolling my own
-        #lines = 1
-        #index = 0
-        #while True:
-            #m = self.re_line_break.search(self.value[index:])
-            #if m is None:
-                #break
-            #old_index, index = index, index + m.span()[1]
-            ##line = text[old_index: old_index + m.span()[0]]
-            ##TODO: implement line wrapping
-            #lines += 1
+            self.handlers.update({curses.KEY_LEFT: self.h_cursor_left,
+                                  curses.KEY_RIGHT: self.h_cursor_right,
+                                  curses.KEY_DC: self.h_delete_right,
+                                  curses.ascii.DEL: self.h_delete_left,
+                                  curses.ascii.BS: self.h_delete_left,
+                                  curses.KEY_BACKSPACE: self.h_delete_left,
+                                  curses.KEY_HOME: self.h_home,
+                                  curses.KEY_END: self.h_end,
+                                  # mac os x curses reports DEL as escape oddly
+                                  # no solution yet
+                                  "^K": self.h_erase_right,
+                                  "^U": self.h_erase_left,
+                                  })
 
-        #return lines
+            self.complex_handlers.extend((
+                            (self.t_input_isprint, self.h_addch),
+                            # (self.t_is_ck, self.h_erase_right),
+                            # (self.t_is_cu, self.h_erase_left),
+                            ))
+
+    def _pre_edit(self):
+        super(TextField, self)._pre_edit()
+        self.standout = True
+        #Explicitly setting the behavior for an unset cursor_position
+        if self.cursor_position is None:
+            self.cursor_position = len(self.value)
+
+    def _post_edit(self):
+        super(TextField, self)._post_edit()
+        self.standout = False
+        #Cause the widget to forget where the cursor was, and reset the begin
+        self.cursor_position = None
+        self.begin_at = 0
 
     def printable_value(self):
         return self.value[self.begin_at:][:self.max_width]
 
     def update(self):
-        if self.begin_at < 0:
-            self.begin_at = 0
-
         if self.bold:
             self.form.curses_pad.attron(curses.A_BOLD)
         if self.underline:
@@ -115,18 +112,132 @@ class TextField(Widget):
 
         self.addstr(self.rely, self.relx, self.printable_value())
 
-        self.form.curses_pad.attron(curses.A_BOLD)
-        self.form.curses_pad.attron(curses.A_UNDERLINE)
-        self.form.curses_pad.attron(curses.A_STANDOUT)
-        self.form.curses_pad.attron(curses.A_REVERSE)
+        self.form.curses_pad.attroff(curses.A_BOLD)
+        self.form.curses_pad.attroff(curses.A_UNDERLINE)
+        self.form.curses_pad.attroff(curses.A_STANDOUT)
+        self.form.curses_pad.attroff(curses.A_REVERSE)
         self.form.curses_pad.bkgdset(' ', curses.A_NORMAL)
         self.form.curses_pad.attrset(0)
         if self.editing:
-            pass
-            #self.print_cursor()
-        #for i, line in enumerate(self.values):
-            #safe_line = self.safe_string(line)
-            #if line == '':
-                #safe_line = '----'
-            #self.addstr(self.rely + i, self.relx, safe_line)
+            self.print_cursor()
 
+    def print_cursor(self):
+        # This needs fixing for Unicode multi-width chars.
+
+        # Cursors do not seem to work on pads.
+        #self.parent.curses_pad.move(self.rely, self.cursor_position - self.begin_at)
+        # let's have a fake cursor
+        #_cur_loc_x = self.cursor_position - self.begin_at + self.relx
+        # The following two lines work fine for ascii, but not for unicode
+        #char_under_cur = self.parent.curses_pad.inch(self.rely, _cur_loc_x)
+        #self.parent.curses_pad.addch(self.rely, self.cursor_position - self.begin_at + self.relx, char_under_cur, curses.A_STANDOUT)
+        #The following appears to work for unicode as well.
+        try:
+            char_under_cur = self.value[self.cursor_position]
+        except IndexError:
+            char_under_cur = ' '
+        #except TypeError:
+            #char_under_cur = ' '
+        if self.do_colors():
+            self.parent.addstr(self.rely,
+                               self.relx + self.cursor_position - self.begin_at,
+                               char_under_cur,
+                               self.form.theme_manager.find_pair(self, 'CURSOR'))
+        else:
+            self.parent.addstr(self.rely,
+                               self.relx + self.cursor_position - self.begin_at,
+                               char_under_cur,
+                               curses.A_STANDOUT)
+
+    def h_addch(self, inpt):
+        if self.editable:
+            #self.value = self.value[:self.cursor_position] + curses.keyname(input) \
+            #   + self.value[self.cursor_position:]
+            #self.cursor_position += len(curses.keyname(input))
+
+            #workaround for the metamode bug:
+            if self._last_get_ch_was_unicode == True and isinstance(self.value, bytes):
+                #probably dealing with python2.
+                #note: I am pretty much assuming npyscreen2 will be python3 only
+                ch_adding = inpt
+                self.value = self.value.decode()
+            elif self._last_get_ch_was_unicode == True:
+                ch_adding = inpt
+            else:
+                try:
+                    ch_adding = chr(inpt)
+                except TypeError:
+                    ch_adding = input
+            self.value = self.value[:self.cursor_position] + ch_adding \
+                + self.value[self.cursor_position:]
+            self.cursor_position += len(ch_adding)
+
+            # or avoid it entirely:
+            #self.value = self.value[:self.cursor_position] + curses.ascii.unctrl(input) \
+            #   + self.value[self.cursor_position:]
+            #self.cursor_position += len(curses.ascii.unctrl(input))
+
+    def h_cursor_left(self, inpt):
+        self.cursor_position -= 1
+
+    def h_cursor_right(self, inpt):
+        self.cursor_position += 1
+
+    def h_delete_left(self, inpt):
+        if self.editable and self.cursor_position > 0:
+            self.value = self.value[:self.cursor_position - 1] + \
+                         self.value[self.cursor_position:]
+        self.cursor_position -= 1
+        self.begin_at -= 1
+
+    def h_delete_right(self, inpt):
+        if self.editable:
+            self.value = self.value[:self.cursor_position] + \
+                         self.value[self.cursor_position + 1:]
+
+    def h_erase_left(self, inpt):
+        if self.editable:
+            self.value = self.value[self.cursor_position:]
+            self.cursor_position = 0
+
+    def h_erase_right(self, inpt):
+        if self.editable:
+            self.value = self.value[:self.cursor_position]
+            self.cursor_position = len(self.value)
+            self.begin_at = 0
+
+    def h_home(self, inpt):
+        self.cursor_position = 0
+
+    def h_end(self, inpt):
+        self.cursor_position = len(self.value)
+
+    def t_input_isprint(self, inpt):
+        """
+        An example of a complex handler; returns True if the most recently
+        gotten character input is a printable unicode character.
+        """
+        if self._last_get_ch_was_unicode and inpt not in '\n\t\r':
+            return True
+        if curses.ascii.isprint(inpt) and \
+           (chr(inpt) not in '\n\t\r'):
+            return True
+        else:
+            return False
+
+    def handle_mouse_event(self, mouse_event):
+        #mouse_id, x, y, z, bstate = mouse_event
+        #rel_mouse_x = x - self.relx - self.parent.show_atx
+        mouse_id, rel_x, rel_y, z, bstate = self.interpret_mouse_event(mouse_event)
+        self.cursor_position = rel_x + self.begin_at
+        self.display()
+
+    @property
+    def begin_at(self):
+        return self._begin_at
+
+    @begin_at.setter
+    def begin_at(self, val):
+        if val < 0:
+            val = 0
+        self._begin_at = val
