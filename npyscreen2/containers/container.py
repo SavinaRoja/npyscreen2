@@ -28,7 +28,7 @@ class Container(Widget):
                  hide_partially_visible=False,
                  *args,
                  **kwargs):
-        super(Container, self).__init__(form, self, *args, **kwargs)
+        super(Container, self).__init__(form, parent, *args, **kwargs)
 
         self.contained = []  # Holds Widgets and Containers
         self.contained_map = {}
