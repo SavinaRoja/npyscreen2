@@ -246,7 +246,6 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
 
         for widget in search:
             if widget.editable:
-            #if widget.editable and not widget.hidden:
                 self.edit_index = self.contained.index(widget)
                 break
 

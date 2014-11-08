@@ -5,7 +5,7 @@ from . import Container
 #import curses
 
 import logging
-log = logging.getLogger('npyscreen2.container.gridcontainer')
+log = logging.getLogger('npyscreen2.containers.gridcontainer')
 
 __all__ = ['GridContainer']
 
@@ -61,20 +61,13 @@ class GridContainer(Container):
                                                  widget_id=widget_id)
         self.update_grid()
 
-    #def get_next_yx(self):
-        #"""
-        #Returns the y-x coordinates of the next available Widget/Container slot.
-        #"""
-        #col, row = self.convert_flat_index_to_grid(len(self.contained))
-        #return self.grid_coords[col][row]
-
     def convert_flat_index_to_grid(self, index):
         if self.fill_rows_first:
             row = index // self.cols
             col = index % self.cols
         else:
-            row = index % self.cols
-            col = index // self.cols
+            row = index % self.rows
+            col = index // self.rows
         return col, row
 
     def convert_grid_indices_to_flat(self, col_index, row_index):
@@ -91,7 +84,7 @@ class GridContainer(Container):
         self.resize_grid_coords()
 
         #GridContainer sets rely-relx and sets max height and width
-        for index, widget in enumerate(self.contained):
+        for index, widget in enumerate(self.autoables):
             col, row = self.convert_flat_index_to_grid(index)
             widget.rely, widget.relx = self.grid_coords[col][row]
             widget.max_height, widget.max_width = self.grid_dim_hw[col][row]
@@ -115,18 +108,8 @@ class GridContainer(Container):
     def update_grid(self):
         for i, widget in enumerate(self.autoables):
             col, row = self.convert_flat_index_to_grid(i)
+            log.debug('i={}, col={}, row={}'.format(i, col, row))
             self.grid[col][row] = widget
-        #auto = [w for w in self.contained if w.auto_manage]
-        ##This puts the contained items into a grid for col-row accession
-        #for i in range(self.cols):
-            #for j in range(self.rows):
-                #flat_index = self.convert_grid_indices_to_flat(i, j)
-                #try:
-                    #widget = auto[flat_index]
-                #except IndexError:
-                    #pass
-                #else:
-                    #self.grid[i][j] = widget
 
     def resize_grid_coords(self):
         def apportion(start, stop, n):
@@ -166,3 +149,29 @@ class GridContainer(Container):
                     width = self.grid_coords[col + 1][row][1] - self.grid_coords[col][row][1]
 
                 self.grid_dim_hw[col][row] = [height, width]
+
+    def set_up_exit_condition_handlers(self):
+        """
+        Set up handlers for what to do when widgets exit.
+
+        Updates the how_exited_handlers with the new methods for directional
+        exit codes in a grid.
+        """
+        super(GridContainer, self).set_up_exit_condition_handlers()
+        self.how_exited_handlers.update({'down': self.find_next_editable_down,
+                                         'right': self.find_next_editable_right,
+                                         'up': self.find_next_editable_up,
+                                         'left': self.find_next_editable_left,
+                                         })
+
+    def find_next_editable_up(self):
+        pass
+
+    def find_next_editable_down(self):
+        pass
+
+    def find_next_editable_left(self):
+        pass
+
+    def find_next_editable_right(self):
+        pass
