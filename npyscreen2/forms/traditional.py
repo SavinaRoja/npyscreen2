@@ -79,7 +79,7 @@ class TraditionalForm(Form):
         self.cur_y = self.rely + self.top_margin - self.show_from_y
         self.cur_x = self.relx + self.left_margin - self.show_from_x
 
-        for widget in (w for w in self.contained if w.auto_manage):
+        for widget in self.autoable:
             widget.rely = self.cur_y
             widget.relx = self.cur_x
             widget.max_height = self.height - self.top_margin - self.bottom_margin
