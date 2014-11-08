@@ -71,7 +71,9 @@ class Widget(InputHandler, LinePrinter):
 
         #hidden serves as a flag which will exclude the Widget from updating
         #during a Container update cycle if True. This flag should generally be
-        #managed by the parent
+        #managed by the parent. "hidden" is chosen to signify this instead of
+        #something like "visible" to emphasize its irrelevance to being within
+        #the visible screen area, use this to *hide* something
         self.hidden = hidden
 
         #auto_manage serves as a flag which will exclude the widget from
