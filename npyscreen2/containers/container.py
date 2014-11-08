@@ -4,6 +4,8 @@ import curses
 from itertools import chain
 import weakref
 
+from . import Indexable
+
 from ..widgets import Widget
 
 import logging
@@ -569,10 +571,8 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         #if self.diagnostic:
             #self.parent.curses_pad.addch(self.rely, self.relx, self.diagnostic)
 
-        for contained in self.contained:
-            if contained.hidden:
-                continue
-            contained._update(clear=clear)
+        for contained_widget in self.not_hiddens:
+            contained_widget._update(clear=clear)
 
     def iter_contained(self):
         """
@@ -633,3 +633,19 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
     @right_margin.setter
     def right_margin(self, val):
         self._right_margin = val
+
+    @property
+    def not_hiddens(self):
+        """
+        This property attribute returns an indexable, sliceable generator over
+        the contained widgets that are not hidden (hidden = False).
+        """
+        return Indexable((w for w in self.contained if not w.hidden))
+
+    @property
+    def autoables(self):
+        """
+        This property attribute returns an indexable, sliceable generator over
+        the contained widgets that are auto-manageable (auto_manage=True).
+        """
+        return Indexable((w for w in self.contained if w.auto_manage))

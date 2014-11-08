@@ -2,15 +2,6 @@
 
 __all__ = ['Container', 'GridContainer']
 
-from .container import Container
-from .gridcontainer import GridContainer
-
-import logging
-log = logging.getLogger('npyscreen2.containers')
-
-from itertools import islice
-
-
 class Indexable(object):
     """
     Recipe for a generator iterator which supports indexing and slicing.
@@ -33,3 +24,14 @@ class Indexable(object):
             return next(islice(self.it, index, index + 1))
         except TypeError:
             return list(islice(self.it, index.start, index.stop, index.step))
+
+from .container import Container
+from .gridcontainer import GridContainer
+
+import logging
+log = logging.getLogger('npyscreen2.containers')
+
+from itertools import islice
+
+
+

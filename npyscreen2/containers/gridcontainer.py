@@ -16,7 +16,7 @@ class GridContainer(Container):
                  form,
                  parent,
                  rows=1,
-                 cols=4,
+                 cols=2,
                  fill_rows_first=True,
                  *args,
                  **kwargs):
@@ -113,18 +113,20 @@ class GridContainer(Container):
         self.update_grid()
 
     def update_grid(self):
-        #TODO: Turn this into an indexable iterator
-        auto = [w for w in self.contained if w.auto_manage]
-        #This puts the contained items into a grid for col-row accession
-        for i in range(self.cols):
-            for j in range(self.rows):
-                flat_index = self.convert_grid_indices_to_flat(i, j)
-                try:
-                    widget = auto[flat_index]
-                except IndexError:
-                    pass
-                else:
-                    self.grid[i][j] = widget
+        for i, widget in enumerate(self.autoables):
+            col, row = self.convert_flat_index_to_grid(i)
+            self.grid[col][row] = widget
+        #auto = [w for w in self.contained if w.auto_manage]
+        ##This puts the contained items into a grid for col-row accession
+        #for i in range(self.cols):
+            #for j in range(self.rows):
+                #flat_index = self.convert_grid_indices_to_flat(i, j)
+                #try:
+                    #widget = auto[flat_index]
+                #except IndexError:
+                    #pass
+                #else:
+                    #self.grid[i][j] = widget
 
     def resize_grid_coords(self):
         def apportion(start, stop, n):
