@@ -29,6 +29,7 @@ class GridContainer(Container):
         self.rows = rows
         self.cols = cols
         self.fill_rows_first = fill_rows_first
+        self.grid_edit_indices = (0, 0)
 
         log.debug('''\
 {} created with rows={}. cols={}, fill_rows_first={}\
@@ -108,7 +109,6 @@ class GridContainer(Container):
     def update_grid(self):
         for i, widget in enumerate(self.autoables):
             col, row = self.convert_flat_index_to_grid(i)
-            log.debug('i={}, col={}, row={}'.format(i, col, row))
             self.grid[col][row] = widget
 
     def resize_grid_coords(self):
@@ -159,19 +159,52 @@ class GridContainer(Container):
         """
         super(GridContainer, self).set_up_exit_condition_handlers()
         self.how_exited_handlers.update({'down': self.find_next_editable_down,
-                                         'right': self.find_next_editable_right,
                                          'up': self.find_next_editable_up,
+                                         'right': self.find_next_editable_right,
                                          'left': self.find_next_editable_left,
                                          })
 
-    def find_next_editable_up(self):
-        pass
-
+    #Keep in mind that the widgets stored in the grid indices are all autoables
     def find_next_editable_down(self):
-        pass
+        log.debug('find down called')
+        cur_col, cur_row = self.grid_edit_indices
+        for row in range(cur_row + 1, self.rows):
+            flat = self.convert_grid_indices_to_flat(cur_col, row)
+            widget = self.autoables[flat]
+            if widget.editable:
+                self.grid_edit_indices = (cur_col, row)
+                self.edit_index = self.contained.index(widget)
+                return
 
-    def find_next_editable_left(self):
-        pass
+    def find_next_editable_up(self):
+        log.debug('find up called')
+        cur_col, cur_row = self.grid_edit_indices
+        for row in range(cur_row - 1, -1, -1):
+            flat = self.convert_grid_indices_to_flat(cur_col, row)
+            widget = self.autoables[flat]
+            if widget.editable:
+                self.grid_edit_indices = (cur_col, row)
+                self.edit_index = self.contained.index(widget)
+                return
 
     def find_next_editable_right(self):
-        pass
+        log.debug('find right called')
+        cur_col, cur_row = self.grid_edit_indices
+        for col in range(cur_col + 1, self.cols):
+            flat = self.convert_grid_indices_to_flat(col, cur_row)
+            widget = self.autoables[flat]
+            if widget.editable:
+                self.grid_edit_indices = (col, cur_row)
+                self.edit_index = self.contained.index(widget)
+                return
+
+    def find_next_editable_left(self):
+        log.debug('find left called')
+        cur_col, cur_row = self.grid_edit_indices
+        for col in range(cur_col - 1, -1, -1):
+            flat = self.convert_grid_indices_to_flat(col, cur_row)
+            widget = self.autoables[flat]
+            if widget.editable:
+                self.grid_edit_indices = (col, cur_row)
+                self.edit_index = self.contained.index(widget)
+                return
