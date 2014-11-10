@@ -164,9 +164,25 @@ class GridContainer(Container):
                                          'left': self.find_next_editable_left,
                                          })
 
+    #Thoughts for these methods and the implementation of the Grid:
+    #Should probably enable some sort of wrap-around/cycle-widgets behavior in
+    #the base; so for instance if one is in the right-most column and a it
+    #exits right, then it will go to the left-most column. Then again, this sort
+    #of thing is probably a significant target for customization... perhaps it
+    #should go to the left-most column *and* down a row, or perhaps wrapping
+    #will only be allowed on the left and right, but not the top and bottom.
+    #I'll need to put some thought into how this might be made easily customized
+    #or documented so that users might be able to avoid re-implementing these
+    #methods.
+    #
+    #On a related note, it seems pretty clear to me that Containers should soon
+    #receive support for treating themselves as editable Widgets. Additionally,
+    #it seems that there may be circumstances where a Container should inherit
+    #the exit condition of a Widget; lots of possibilities out there...
+    #
     #Keep in mind that the widgets stored in the grid indices are all autoables
+    #TODO: Take precautions in these methods to handle IndexErrormj
     def find_next_editable_down(self):
-        log.debug('find down called')
         cur_col, cur_row = self.grid_edit_indices
         for row in range(cur_row + 1, self.rows):
             flat = self.convert_grid_indices_to_flat(cur_col, row)
@@ -177,7 +193,6 @@ class GridContainer(Container):
                 return
 
     def find_next_editable_up(self):
-        log.debug('find up called')
         cur_col, cur_row = self.grid_edit_indices
         for row in range(cur_row - 1, -1, -1):
             flat = self.convert_grid_indices_to_flat(cur_col, row)
@@ -188,7 +203,6 @@ class GridContainer(Container):
                 return
 
     def find_next_editable_right(self):
-        log.debug('find right called')
         cur_col, cur_row = self.grid_edit_indices
         for col in range(cur_col + 1, self.cols):
             flat = self.convert_grid_indices_to_flat(col, cur_row)
@@ -199,7 +213,6 @@ class GridContainer(Container):
                 return
 
     def find_next_editable_left(self):
-        log.debug('find left called')
         cur_col, cur_row = self.grid_edit_indices
         for col in range(cur_col - 1, -1, -1):
             flat = self.convert_grid_indices_to_flat(col, cur_row)

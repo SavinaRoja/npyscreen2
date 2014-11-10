@@ -51,6 +51,7 @@ class Container(Widget):
         #When set to None, nothing is selected for editing
         #When set to integer, self.contained[self.edit_index] is being edited
         self.edit_index = None
+
         #The notion here is the possibility to select the container as a whole
         #as an editing selection. Roughly speaking, this would enable a hold
         #point in the natural recursion of editing so that the Container object
