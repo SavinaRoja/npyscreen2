@@ -34,3 +34,5 @@ class Indexable(object):
 from .container import Container
 
 from .gridcontainer import GridContainer
+
+from .titledfield import TitledField

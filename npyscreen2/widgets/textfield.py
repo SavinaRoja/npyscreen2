@@ -31,7 +31,7 @@ class TextField(Widget):
                  runoff_right=':',
                  #wrap_lines=False,  # Line wrapping is a nightmare for later
                  start_cursor_at_end=True,
-                 highlight_whole_widget=False,
+                 highlight_whole_widget=False,  # not used yet
                  *args,
                  **kwargs):
         super(TextField, self).__init__(form,
@@ -43,7 +43,7 @@ class TextField(Widget):
         self.runoff_left = runoff_left
         self.runoff_right = runoff_right
 
-        self.highlight_whole_widget = highlight_whole_widget
+        self.highlight_whole_widget = highlight_whole_widget  # not used yet
 
         self.cursor_bold = cursor_bold
         self.cursor_color = cursor_color
@@ -68,6 +68,9 @@ class TextField(Widget):
                                   curses.KEY_BACKSPACE: self.h_delete_left,
                                   curses.KEY_HOME: self.h_home,
                                   curses.KEY_END: self.h_end,
+                                  curses.ascii.NL: self.h_exit_down,
+                                  curses.ascii.CR: self.h_exit_down,
+                                  curses.ascii.TAB: self.h_exit_down,
                                   #mac os x curses reports DEL as escape oddly
                                   #no solution yet
                                   "^K": self.h_erase_right,
