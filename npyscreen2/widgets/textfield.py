@@ -105,6 +105,10 @@ class TextField(Widget):
         return val
         #return self.value[self.begin_at:][:max_string_length]
 
+    def resize(self):
+        self.height = 1
+        self.width = self.max_width
+
     def update(self):
         if self.cursor_position is not None:
             if self.cursor_position < self.begin_at:
@@ -119,7 +123,6 @@ class TextField(Widget):
 
         if self.begin_at > 0:
             self.addch(self.rely, self.relx, self.runoff_left)
-
 
     def print_cursor(self):
         # This needs fixing for Unicode multi-width chars.

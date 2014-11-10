@@ -112,6 +112,7 @@ class GridContainer(Container):
             self.grid[col][row] = widget
 
     def resize_grid_coords(self):
+
         def apportion(start, stop, n):
             locs = []
             cell_size = (stop - start + 1) / n

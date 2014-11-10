@@ -627,6 +627,7 @@ class Widget(InputHandler, LinePrinter):
         p_y_t, p_y_b, p_x_l, p_x_r = self.parent_borders()
         #If the y is not within the parent's borders, we give up
         if y < p_y_t or y > p_y_b:
+            log.warning('y out of bounds, y={}, x={}'.format(y, x))
             return False
         #if the x is to the right of the parent, we give up
         #if x > p_x_r:
