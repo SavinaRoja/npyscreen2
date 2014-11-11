@@ -37,7 +37,7 @@ class TestTraditional(npyscreen2.TraditionalForm):
 
 class BorderGrid(npyscreen2.GridContainer):
     def __init__(self, form, parent, *args, **kwargs):
-        super(BorderGrid, self).__init__(form, parent, *args, **kwargs)
+        super(BorderGrid, self).__init__(form, parent, container_editable_as_widget=True, *args, **kwargs)
         self.border = self.add(npyscreen2.BorderBox,
                                widget_id='border',
                                rely=0,
@@ -52,6 +52,10 @@ class BorderGrid(npyscreen2.GridContainer):
                               relx=self.relx,
                               max_height=self.max_height,
                               max_width=self.max_width)
+
+    def pre_edit(self):
+        l.debug('pre_edit called, setting container_selected=True')
+        self.container_selected = True
 
 class TestWidget(npyscreen2.BorderBox):
     pass
