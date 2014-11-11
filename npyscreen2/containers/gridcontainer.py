@@ -151,19 +151,47 @@ class GridContainer(Container):
 
                 self.grid_dim_hw[col][row] = [height, width]
 
-    def set_up_exit_condition_handlers(self):
-        """
-        Set up handlers for what to do when widgets exit.
+    #def set_up_exit_condition_handlers(self):
+        #"""
+        #Set up handlers for what to do when widgets exit.
 
-        Updates the how_exited_handlers with the new methods for directional
-        exit codes in a grid.
-        """
-        super(GridContainer, self).set_up_exit_condition_handlers()
-        self.how_exited_handlers.update({'down': self.find_next_editable_down,
-                                         'up': self.find_next_editable_up,
-                                         'right': self.find_next_editable_right,
-                                         'left': self.find_next_editable_left,
-                                         })
+        #Updates the how_exited_handlers with the new methods for directional
+        #exit codes in a grid.
+        #"""
+        #super(GridContainer, self).set_up_exit_condition_handlers()
+        #self.how_exited_handlers.update({'down': self.find_next_editable_down,
+                                         #'up': self.find_next_editable_up,
+                                         #'right': self.find_next_editable_right,
+                                         #'left': self.find_next_editable_left,
+                                         #})
+
+    def exit_down_handler(self):
+        if self.container_selected:
+            #Sets self.editing=False and self.how_exited='down'
+            self.h_exit_down()
+        else:
+            self.find_next_editable_down()
+
+    def exit_right_handler(self):
+        if self.container_selected:
+            #Sets self.editing=False and self.how_exited='right'
+            self.h_exit_right()
+        else:
+            self.find_next_editable_right()
+
+    def exit_up_handler(self):
+        if self.container_selected:
+            #Sets self.editing=False and self.how_exited='up'
+            self.h_exit_up()
+        else:
+            self.find_next_editable_up()
+
+    def exit_left_handler(self):
+        if self.container_selected:
+            #Sets self.editing=False and self.how_exited='left'
+            self.h_exit_left()
+        else:
+            self.find_next_editable_left()
 
     #Thoughts for these methods and the implementation of the Grid:
     #Should probably enable some sort of wrap-around/cycle-widgets behavior in

@@ -20,7 +20,7 @@ class Container(Widget):
                  form,
                  parent,
                  margin=0,  # Applies to all sides unless they are specified
-                 container_select=False,
+                 container_editable_as_widget=False,
                  top_margin=None,
                  bottom_margin=None,
                  left_margin=None,
@@ -52,11 +52,25 @@ class Container(Widget):
         #When set to integer, self.contained[self.edit_index] is being edited
         self.edit_index = None
 
-        #The notion here is the possibility to select the container as a whole
-        #as an editing selection. Roughly speaking, this would enable a hold
-        #point in the natural recursion of editing so that the Container object
-        #as a whole could be manipulated
-        self.container_select = container_select
+        #When a Container's `container_editable_as_widget` attribute is set to
+        #True, then the Container has the option to behave as a Widget during
+        #the edit cycle. The Container's edit loop calls the `edit` method of
+        #its currently selected editable Widget; upon entering the loop, and
+        #between the `edit` calls, it will check to see whether
+        #`container_editable_as_widget` and `container_selected` are True and
+        #will instead execute the `Widget.edit` method on the Container itself.
+        #Exit handling should be defined to permit the transfer between the
+        #editing of the Container and its Widgets. The base implementation
+        #defines the "ascend" and "descend" exit conditions for this purpose;
+        #custom redefinition or extension of this behavior is certainly possible
+        #If one desires to enable selection of the Container *upon entry* of the
+        #edit loop, then setting `container_selected = True` should be done
+        #during the `pre_edit` phase or in `enter_edit_loop` phase.
+#Note!: To properly take advantage of this method, your exit handlers
+#should differentiate between exiting from contained Widgets and the
+#Container itself by referring to the `container_selected` attribute
+        self.container_editable_as_widget = container_editable_as_widget
+        self.container_selected = False
 
         self.set_up_exit_condition_handlers()
 
@@ -198,15 +212,18 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         As a Widget exits its edit loop, it should set its `how_exited`
         attribute, the value of this attribute is what will be used in lookup.
         """
-        self.how_exited_handlers = {'down': self.find_next_editable,
-                                    'right': self.find_next_editable,
-                                    'up': self.find_previous_editable,
-                                    'left': self.find_previous_editable,
-                                    'escape': self.do_nothing,
+        self.how_exited_handlers = {'down': self.exit_down_handler,
+                                    'right': self.exit_right_handler,
+                                    'up': self.exit_up_handler,
+                                    'left': self.exit_left_handler,
+                                    'escape': self.toggle_container_edit,
                                     True: self.find_next_editable,
                                     'mouse': self.get_and_use_mouse_event,
                                     False: self.do_nothing,
-                                    None: self.do_nothing}
+                                    None: self.do_nothing,
+                                    'ascend': self.activate_container_edit,
+                                    'descend': self.deactivate_container_edit,
+                                    }
         log.debug('how_exit_handlers initialized: {0}'.format(self.how_exited_handlers))
 
     def safe_get_mouse_event(self):
@@ -221,6 +238,49 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         mouse_event = self.safe_get_mouse_event()
         if mouse_event:
             self.use_mouse_event(mouse_event)
+
+    def exit_down_handler(self):
+        if self.container_selected:
+            #Sets self.editing=False and self.how_exited='down'
+            self.h_exit_down()
+        else:
+            self.find_next_editable()
+
+    def exit_right_handler(self):
+        if self.container_selected:
+            #Sets self.editing=False and self.how_exited='right'
+            self.h_exit_right()
+        else:
+            self.find_next_editable()
+
+    def exit_up_handler(self):
+        if self.container_selected:
+            #Sets self.editing=False and self.how_exited='up'
+            self.h_exit_up()
+        else:
+            self.find_previous_editable()
+
+    def exit_left_handler(self):
+        if self.container_selected:
+            #Sets self.editing=False and self.how_exited='left'
+            self.h_exit_left()
+        else:
+            self.find_previous_editable()
+
+    def toggle_container_edit(self):
+        """
+        """
+        self.container_selected = not self.container_selected
+
+    def activate_container_edit(self):
+        """
+        """
+        self.container_selected = True
+
+    def deactivate_container_edit(self):
+        """
+        """
+        self.container_selected = False
 
     def find_next_editable(self):
         """
@@ -317,11 +377,21 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         self.edit_index = self.enter_edit_loop()
         log.debug('{0}.enter_edit_loop returned: {1}'.format(self.__class__,
                                                              self.edit_index))
-        if self.edit_index is None:
+
+        #Should correspond to no editable Widgets and the Container not selected
+        #for editing as a Widget
+        if self.edit_index is None and not self.container_selected:
             self.editing = False
             return False
 
         while self.editing:
+            if self.container_editable_as_widget and self.container_selected:
+                super(Container, self).edit_loop()
+                self.editing = True  # edit_loop not permitted to end editing
+                self.display()
+                self.handle_exiting_widgets(self.how_exited)
+                continue
+
             #Do check to get editing widget on screen
             selected = self.contained[self.edit_index]
             self.bring_into_view()

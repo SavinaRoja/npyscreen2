@@ -229,6 +229,7 @@ class Widget(InputHandler, LinePrinter):
     def _pre_edit(self):
         self.highlight = True
         self.how_exited = False
+        self.pre_edit()
         log.debug('{0}._pre_edit method called'.format(self.__class__))
 
     def post_edit(self):
@@ -241,6 +242,7 @@ class Widget(InputHandler, LinePrinter):
         log.debug('{0}._post_edit method called'.format(self.__class__))
         self.highlight = 0
         self._update()
+        self.post_edit()
 
     def edit_loop(self):
         if not self.parent.editing:

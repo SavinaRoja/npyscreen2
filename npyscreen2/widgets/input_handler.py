@@ -23,7 +23,7 @@ def exit_edit_method(func):
     for `self.how_exited`.
     """
     @wraps(func)
-    def wrapper(self, inpt):
+    def wrapper(self, inpt=None):
         self.editing = False
         self.how_exited = func(self, inpt)
     return wrapper
@@ -151,29 +151,37 @@ class InputHandler(object):
 #returned
 
     @exit_edit_method
-    def h_exit_down(self, inpt):
+    def h_exit_down(self, inpt=None):
         return 'down'
 
     @exit_edit_method
-    def h_exit_right(self, inpt):
+    def h_exit_right(self, inpt=None):
         return 'right'
 
     @exit_edit_method
-    def h_exit_up(self, inpt):
+    def h_exit_up(self, inpt=None):
         return 'up'
 
     @exit_edit_method
-    def h_exit_left(self, inpt):
+    def h_exit_left(self, inpt=None):
         return 'left'
 
     @exit_edit_method
-    def h_exit_escape(self, inpt):
+    def h_exit_escape(self, inpt=None):
         return 'escape'
+
+    @exit_edit_method
+    def h_exit_ascend(self, inpt=None):
+        return 'ascend'
+
+    @exit_edit_method
+    def h_exit_descend(self, inpt=None):
+        return 'descend'
 
     #@exit_edit_method
     #Since this method does not quite fit the standard exit model, the decorator
     #is not appropriate. I should consider if this appropriately named
-    def h_exit_mouse(self, inpt):
+    def h_exit_mouse(self, inpt=None):
         mouse_event = self.parent.safe_get_mouse_event()
         if mouse_event and self.interested_in_mouse_event(mouse_event):
             self.handle_mouse_event(mouse_event)
