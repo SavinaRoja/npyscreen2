@@ -27,6 +27,7 @@ def wrapper_basic(call_function):
 
 
 def wrapper(call_function, fork=None, reset=True):
+    os.environ['ESCDELAY'] = '10'
     global NEVER_RUN_INITSCR
     if fork:
         wrapper_fork(call_function, reset=reset)
