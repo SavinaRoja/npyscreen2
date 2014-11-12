@@ -25,6 +25,7 @@ class TextField(Widget):
                  show_cursor=False,
                  cursor_bold=False,
                  cursor_color='CURSOR',
+                 cursor_highlight_color='CURSOR_HIGHLIGHT',
                  cursor_underline=False,
                  cursor_empty_character=' ',
                  runoff_left=':',
@@ -47,6 +48,7 @@ class TextField(Widget):
 
         self.cursor_bold = cursor_bold
         self.cursor_color = cursor_color
+        self.cursor_highlight_color = cursor_highlight_color
         self.cursor_underline = cursor_underline
         self.cursor_empty_character = cursor_empty_character
 
@@ -150,7 +152,11 @@ class TextField(Widget):
             attr |= curses.A_UNDERLINE
 
         if self.do_colors():
-            attr |= self.form.theme_manager.find_pair(self, self.cursor_color)
+            if self.highlight:
+                attr |= self.form.theme_manager.find_pair(self, self.cursor_highlight_color)
+            else:
+                attr |= self.form.theme_manager.find_pair(self,
+                                                          self.cursor_color)
         else:
             attr |= curses.A_REVERSE
 
@@ -200,11 +206,13 @@ class TextField(Widget):
                          self.value[self.cursor_position:]
         self.cursor_position -= 1
         self.begin_at -= 1
+        self.display()
 
     def h_delete_right(self, inpt):
         if self.editable:
             self.value = self.value[:self.cursor_position] + \
                          self.value[self.cursor_position + 1:]
+        self.display()
 
     def h_erase_left(self, inpt):
         if self.editable:

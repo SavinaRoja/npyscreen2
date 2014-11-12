@@ -514,6 +514,11 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         self.resize()
 
         self.set_coords()
+        #For all things auto-managed, should their max_height and max-width be
+        #set to that of the Container - margins?
+        for widget in self.autoables:
+            widget.max_width = self.max_width - self.left_margin - self.right_margin
+            widget.max_height = self.max_height - self.top_margin - self.bottom_margin
 
         for widget in self.contained:
             widget._resize()

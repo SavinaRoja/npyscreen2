@@ -54,7 +54,9 @@ class ThemeManager(object):
                       'HIGHLIGHT': 'BLACK_WHITE',
                       #CURSOR should stand out against HIGHLIGHT, it may also
                       #stand out against DEFAULT
-                      'CURSOR': 'WHITE_BLACK',
+                      #'CURSOR': 'WHITE_BLACK',
+                      'CURSOR': 'BLACK_WHITE',
+                      'CURSOR_HIGHLIGHT': 'WHITE_BLACK',
                       'LABEL': 'GREEN_BLACK',
                       'LABELBOLD': 'WHITE_BLACK',
                       'CONTROL': 'YELLOW_BLACK',
@@ -68,7 +70,7 @@ class ThemeManager(object):
                       'VERYGOOD': 'BLACK_GREEN',
                       'CAUTION': 'YELLOW_BLACK',
                       'CAUTIONHL': 'BLACK_YELLOW',
-                      'TEST': 'BLUE_YELLOW'}
+                      'TEST': 'BLUE_YELLOW',}
 
     def __init__(self):
         #curses.use_default_colors()
