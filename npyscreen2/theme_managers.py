@@ -62,7 +62,7 @@ class ThemeManager(object):
                       'CONTROL': 'YELLOW_BLACK',
                       'IMPORTANT': 'GREEN_BLACK',
                       'SAFE': 'GREEN_BLACK',
-                      'WARNING': 'YELLOW_BLACK',
+                      'WARNING': 'BLACK_YELLOW',
                       'DANGER': 'RED_BLACK',
                       'CRITICAL': 'BLACK_RED',
                       'GOOD': 'GREEN_BLACK',
