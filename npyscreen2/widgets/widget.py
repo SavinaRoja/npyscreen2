@@ -4,6 +4,7 @@ import copy
 import sys
 import curses
 import curses.ascii
+import time
 import weakref
 from .. import global_options
 
@@ -37,6 +38,8 @@ class Widget(InputHandler, LinePrinter):
                  rely=0,
                  value=None,
                  feed=None,
+                 feed_reset=False,
+                 feed_reset_time=5,
                  width=None,
                  height=None,
                  max_height=None,
@@ -91,9 +94,8 @@ class Widget(InputHandler, LinePrinter):
             value = ''
         self.value = value
 
-        self._feed = None
-        if feed is not None:
-            self.feed = feed
+        #This should be a method that modifies the value (at least)
+        #self.feed = feed
 
         self.preserve_instantiation_dimensions =\
              preserve_instantiation_dimensions
@@ -109,6 +111,11 @@ class Widget(InputHandler, LinePrinter):
 
         self.relx = relx
         self.rely = rely
+
+        #When this is True, the Widget's feed method may be called
+        self.feed = feed
+        self.feed_reset = feed_reset
+        self.feed_reset_time = feed_reset_time
 
         #The following attributes are intended to be abstracted traits which
         #may be applied to how a widget is represented on the screen. Hopefully
@@ -437,25 +444,47 @@ class Widget(InputHandler, LinePrinter):
         if max_width is not None:
             self.max_width = max_width
 
+    def _feed_wrapper(self, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            self.value = func(*args, **kwargs)
+        return wrapper
+
+    def _feed_timeout_wrapper(self, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            now = time.time()
+            if (now - wrapper.started) > self.feed_reset_time:
+                self.live = False
+                self.value = ''
+                self.when_feed_resets()
+            else:
+                self.value = func(*args, **kwargs)
+        wrapper.started = time.time()
+        return wrapper
+
+    def call_feed(self):
+        self.feed()
+
+    def when_feed_resets(self):
+        pass
+
     @property
     def feed(self):
-        """
-        The method for updating the LiveWidget's value. Customize your widget by
-        setting this to a function that returns the desired value from a live
-        data source.
-        """
-        def _feed_wrapper(f):
-            @wraps(f)
-            def wrapper(*args, **kwds):
-                self.value = f(*args, **kwds)
-            return wrapper
-        return _feed_wrapper(self._feed)
+        return self._feed
 
     @feed.setter
     def feed(self, func):
-        if not callable(func):
-            raise ValueError('LiveWidget.feed must be assigned a callable')
-        self._feed = func
+        if func is None:
+            self._feed = None
+            self.live = False
+            return
+        if self.feed_reset:
+            self._feed = self._feed_timeout_wrapper(func)
+            self.live = True
+        else:
+            self._feed = self._feed_wrapper(func)
+            self.live = True
 
 #Let's discuss dimension and position policy for Widgets and, by extension,
 #Containers; I'll simply refer to both as Widgets in the following text.

@@ -30,7 +30,10 @@ class Container(Widget):
                  hide_partially_visible=False,
                  *args,
                  **kwargs):
-        super(Container, self).__init__(form, parent, *args, **kwargs)
+        super(Container, self).__init__(form,
+                                        parent,
+                                        *args,
+                                        **kwargs)
 
         self.contained = []  # Holds Widgets and Containers
         self.contained_map = {}
@@ -47,6 +50,8 @@ class Container(Widget):
         self.bottom_margin = bottom_margin
         self.left_margin = left_margin
         self.right_margin = right_margin
+
+        self.live = True
 
         #When set to None, nothing is selected for editing
         #When set to integer, self.contained[self.edit_index] is being edited
@@ -616,16 +621,17 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         """
         pass
 
-    def feed(self):
+    def call_feed(self):
         """
         A Container does not have a meaningful value, so a feed method for a
         Container does not behave like a feed method for a LiveWidget. Instead,
         the feed method of a container must call the feed methods for each
         contained Widget or Container that has a feed method.
         """
-        for widget in self.contained:
-            if widget._feed is not None:
-                widget.feed()
+        for widget in self.not_hiddens:
+            #if widget._feed is not None:
+            if widget.live:
+                widget.call_feed()
 
     def update(self):
         """
