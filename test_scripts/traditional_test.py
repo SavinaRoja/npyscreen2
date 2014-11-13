@@ -24,7 +24,12 @@ class TestApp(npyscreen2.App):
 class TestTraditional(npyscreen2.TraditionalForm):
     def __init__(self, *args, **kwargs):
         super(TestTraditional, self).__init__(left_margin=1, *args, **kwargs)
-        self.grid = self.add_widget(npyscreen2.GridContainer, rows=4, cols=5, container_select=True, preserve_instantiation_dimensions=False,hide_partially_visible=False)
+        self.grid = self.add_widget(npyscreen2.GridContainer,
+                                    rows=4,
+                                    cols=5,
+                                    container_select=True,
+                                    preserve_instantiation_dimensions=False,
+                                    hide_partially_visible=False)
         l.debug('rely={}, relx={}'.format(self.grid.rely, self.grid.relx))
         for i in range(self.grid.rows * self.grid.cols):
             g = self.grid.add_widget(BorderGrid, rows=3, cols=3, margin=1)
@@ -47,11 +52,11 @@ class BorderGrid(npyscreen2.GridContainer):
                                max_height=self.max_height,
                                max_width=self.max_width, editable=True)
     def resize(self):
-        super(BorderGrid, self).resize()
         self.border.multi_set(rely=self.rely,
                               relx=self.relx,
                               max_height=self.max_height,
                               max_width=self.max_width)
+        super(BorderGrid, self).resize()
 
     def pre_edit(self):
         l.debug('pre_edit called, setting container_selected=True')
