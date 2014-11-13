@@ -35,6 +35,7 @@ class TextField(Widget):
                  highlight_whole_widget=False,  # not used yet
                  *args,
                  **kwargs):
+
         super(TextField, self).__init__(form,
                                         parent,
                                         value=value,

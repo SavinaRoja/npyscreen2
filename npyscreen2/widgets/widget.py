@@ -112,10 +112,9 @@ class Widget(InputHandler, LinePrinter):
         self.relx = relx
         self.rely = rely
 
-        #When this is True, the Widget's feed method may be called
-        self.feed = feed
         self.feed_reset = feed_reset
         self.feed_reset_time = feed_reset_time
+        self.feed = feed
 
         #The following attributes are intended to be abstracted traits which
         #may be applied to how a widget is represented on the screen. Hopefully
