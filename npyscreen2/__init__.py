@@ -20,7 +20,7 @@ from .app import NPSApp, App, NPSAppAdvanced, AppAdvanced
 
 from .widgets import Widget, NotEnoughSpaceForWidget, BorderBox, TextField
 
-from .containers import Container, GridContainer, TitledField
+from .containers import Container, GridContainer, SmartContainer, TitledField
 
 from .forms import Form, set_theme, get_theme, TraditionalForm
 

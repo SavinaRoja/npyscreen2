@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__all__ = ['Container', 'GridContainer']
+__all__ = ['Container', 'GridContainer', 'SmartContainer']
 
 from itertools import islice
 
@@ -34,5 +34,7 @@ class Indexable(object):
 from .container import Container
 
 from .gridcontainer import GridContainer
+
+from .smartcontainer import SmartContainer
 
 from .titledfield import TitledField
