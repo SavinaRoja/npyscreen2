@@ -37,23 +37,10 @@ class GridContainer(Container):
 
         self.initiate_grid()
 
-    def add_widget(self,
-                   widget_class,
-                   widget_id=None,
-                   rely=None,
-                   relx=None,
-                   max_height=None,
-                   max_width=None,
-                   *args,
-                   **kwargs):
-        w = super(GridContainer, self).add_widget(widget_class,
-                                                  widget_id=None,
-                                                  rely=None,
-                                                  relx=None,
-                                                  max_height=None,
-                                                  max_width=None,
-                                                  *args,
-                                                  **kwargs)
+    def add_widget(self, *args, **kwargs):
+
+        w = super(GridContainer, self).add_widget(*args, **kwargs)
+
         self.update_grid()
         return w
 
@@ -79,8 +66,8 @@ class GridContainer(Container):
 
     def resize(self):
         #GridContainer expands to fill its entire allocated space
-        self.height = self.max_height
-        self.width = self.max_width
+        #self.height = self.max_height
+        #self.width = self.max_width
 
         self.resize_grid_coords()
 
@@ -151,19 +138,19 @@ class GridContainer(Container):
 
                 self.grid_dim_hw[col][row] = [height, width]
 
-    #def set_up_exit_condition_handlers(self):
-        #"""
-        #Set up handlers for what to do when widgets exit.
+    def set_up_exit_condition_handlers(self):
+        """
+        Set up handlers for what to do when widgets exit.
 
-        #Updates the how_exited_handlers with the new methods for directional
-        #exit codes in a grid.
-        #"""
-        #super(GridContainer, self).set_up_exit_condition_handlers()
-        #self.how_exited_handlers.update({'down': self.find_next_editable_down,
-                                         #'up': self.find_next_editable_up,
-                                         #'right': self.find_next_editable_right,
-                                         #'left': self.find_next_editable_left,
-                                         #})
+        Updates the how_exited_handlers with the new methods for directional
+        exit codes in a grid.
+        """
+        super(GridContainer, self).set_up_exit_condition_handlers()
+        self.how_exited_handlers.update({'down': self.find_next_editable_down,
+                                         'up': self.find_next_editable_up,
+                                         'right': self.find_next_editable_right,
+                                         'left': self.find_next_editable_left,
+                                         })
 
     def exit_down_handler(self):
         if self.container_selected:
@@ -203,19 +190,16 @@ class GridContainer(Container):
     #I'll need to put some thought into how this might be made easily customized
     #or documented so that users might be able to avoid re-implementing these
     #methods.
-    #
-    #On a related note, it seems pretty clear to me that Containers should soon
-    #receive support for treating themselves as editable Widgets. Additionally,
-    #it seems that there may be circumstances where a Container should inherit
-    #the exit condition of a Widget; lots of possibilities out there...
-    #
     #Keep in mind that the widgets stored in the grid indices are all autoables
-    #TODO: Take precautions in these methods to handle IndexErrormj
     def find_next_editable_down(self):
         cur_col, cur_row = self.grid_edit_indices
         for row in range(cur_row + 1, self.rows):
             flat = self.convert_grid_indices_to_flat(cur_col, row)
-            widget = self.autoables[flat]
+            try:
+                widget = self.autoables[flat]
+            except IndexError:
+                continue
+
             if widget.editable:
                 self.grid_edit_indices = (cur_col, row)
                 self.edit_index = self.contained.index(widget)
@@ -225,7 +209,11 @@ class GridContainer(Container):
         cur_col, cur_row = self.grid_edit_indices
         for row in range(cur_row - 1, -1, -1):
             flat = self.convert_grid_indices_to_flat(cur_col, row)
-            widget = self.autoables[flat]
+            try:
+                widget = self.autoables[flat]
+            except IndexError:
+                continue
+
             if widget.editable:
                 self.grid_edit_indices = (cur_col, row)
                 self.edit_index = self.contained.index(widget)
@@ -235,7 +223,11 @@ class GridContainer(Container):
         cur_col, cur_row = self.grid_edit_indices
         for col in range(cur_col + 1, self.cols):
             flat = self.convert_grid_indices_to_flat(col, cur_row)
-            widget = self.autoables[flat]
+            try:
+                widget = self.autoables[flat]
+            except IndexError:
+                continue
+
             if widget.editable:
                 self.grid_edit_indices = (col, cur_row)
                 self.edit_index = self.contained.index(widget)
@@ -245,7 +237,11 @@ class GridContainer(Container):
         cur_col, cur_row = self.grid_edit_indices
         for col in range(cur_col - 1, -1, -1):
             flat = self.convert_grid_indices_to_flat(col, cur_row)
-            widget = self.autoables[flat]
+            try:
+                widget = self.autoables[flat]
+            except IndexError:
+                continue
+
             if widget.editable:
                 self.grid_edit_indices = (col, cur_row)
                 self.edit_index = self.contained.index(widget)

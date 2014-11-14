@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-One of the major difficulties I struggled with while working with npyscreen is
-the lack of native logging support. I hope to remedy this by building logging
-into npyscreen2.
 """
 
 import logging

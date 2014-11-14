@@ -335,7 +335,10 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         circle, rather than a line.
         """
         #Everything before the current index in reverse order
-        search = self.contained[self.edit_index - 1:: -1]
+        if self.edit_index == 0:
+            search = []
+        else:
+            search = self.contained[self.edit_index - 1:: -1]
         if self.cycle_widgets:
             #Append everything after the current index in reverse order
             search = chain(search, self.contained[:self.edit_index: -1])
@@ -418,37 +421,6 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         """
         pass
 
-    #def edit_loop(self):
-        #self.display()
-        #while not self.contained[self.edit_index].editable:
-            #self.edit_index += 1
-            #if self.edit_index > len(self.contained) - 1:
-                #self.editing = False
-                #return False
-
-        #while self.editing:
-            ##Check to ensure that the widget being edited is visible on screen
-            ##This code comes from npyscreen and I don't think its truly
-            ##generalizable to the new implementation...
-            ##If the entire pad is on screen, then it is presumed that the widget
-            ##must be visible, which I don't think should actually be True
-            #if not self.ALL_SHOWN:
-                ##on_screen is meant to adjust the screen so that the selected
-                ##widget for editing is visible. Can this be generalized for all
-                ##Forms or should it be left up to sub-classes?
-                #self.on_screen()
-            #self.while_editing(weakref.proxy(self.contained[self.edit_index]))
-            #self._during_edit_loop()
-            #if not self.editing:
-                #break
-            #self.contained[self.edit_index].edit()
-            #self.contained[self.edit_index].display()
-
-            #self.handle_exiting_widgets(self.contained[self.edit_index].how_exited)
-
-            #if self.edit_index > len(self.contained)-1:
-                #self.edit_index = len(self.contained)-1
-
     def bring_into_view(self):
         """
         If the currently selected for editing Widget/Container is not currently
@@ -483,17 +455,12 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
             modified = True
             self.show_from_y -= c_top - sel_top
 
-        log.debug('Before: self.show_from_x={}'.format(self.show_from_x))
         if sel_right > c_right:
             modified = True
             self.show_from_x += sel_right - c_right
-            log.debug('c_right={}, sel_right={}'.format(c_right, sel_right))
-            log.debug('After: self.show_from_x={}'.format(self.show_from_x))
         elif sel_left < c_left:
             modified = True
             self.show_from_x -= c_left - sel_left
-            log.debug('c_left={}, sel_left={}'.format(c_left, sel_left))
-            log.debug('After: self.show_from_x={}'.format(self.show_from_x))
 
         if modified:
             self._resize()
@@ -516,14 +483,17 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         unmodified and that the specifics of resizing for that Container be
         placed in `_resize`.
         """
+        self.inflate()
         self.resize()
 
         self.set_coords()
-        #For all things auto-managed, should their max_height and max-width be
-        #set to that of the Container - margins?
+
         for widget in self.autoables:
-            widget.max_width = self.max_width - self.left_margin - self.right_margin
-            widget.max_height = self.max_height - self.top_margin - self.bottom_margin
+            #widget.max_width = self.max_width - self.left_margin - self.right_margin
+            #widget.max_height = self.max_height - self.top_margin - self.bottom_margin
+
+            widget.max_width = self.width - self.left_margin - self.right_margin
+            widget.max_height = self.height - self.top_margin - self.bottom_margin
 
         for widget in self.contained:
             widget._resize()
@@ -604,7 +574,8 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
             #Determine if widget is fully within container
             elif w_y_t >= c_y_t and w_y_b <= c_y_b and w_x_l >= c_x_l and \
                  w_x_r <= c_x_r:
-                widget.hidden = False  # In which case we ensure not hidden
+                if widget.auto_manage:
+                    widget.hidden = False  # In which case we ensure not hidden
             #Widget is only partly visible if the previous are False
             else:
                 if self.hide_partially_visible:

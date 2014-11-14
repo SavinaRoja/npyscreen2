@@ -43,31 +43,21 @@ class SmartContainer(Container):
                            'ffdh-bottom': self.ffdh_bottom,
                            }
         self.scheme = scheme
+        log.debug('SmartContainer.scheme is {}'.format(self.scheme))
 
-        super(SmartContainer, self).__init__(form, parent, *args, **kwargs)
+        super(SmartContainer, self).__init__(form,
+                                             parent,
+                                             *args,
+                                             **kwargs)
 
-    def add_widget(self, widget_class, widget_id=None, *args, **kwargs):
-        w = super(SmartContainer, self).add_widget(widget_class,
-                                                   widget_id=widget_id,
-                                                   *args,
-                                                   **kwargs)
-        self._resize()
+    def add_widget(self, *args, **kwargs):
+
+        w = super(SmartContainer, self).add_widget(*args, **kwargs)
+
+        self.resize()
         return w
 
-    def _resize(self):
-        self.height = self.max_height
-        self.width = self.max_width
-
-        #The SmartContainer only sets the max_width and max_height of the
-        #contained items according to its own maximums (less margins). As a
-        #result of this and its management by height/width attrs, some thought
-        #should be given to how contained items expand
-        for widget in self.contained:
-            widget.max_width = self.max_width -\
-                               (self.left_margin + self.right_margin)
-            widget.max_height = self.max_height -\
-                               (self.top_margin + self.bottom_margin)
-
+    def resize(self):
         self.rearrange_widgets()
 
     def rearrange_widgets(self):
@@ -147,6 +137,3 @@ class SmartContainer(Container):
             self._scheme = val
         else:
             raise ValueError('{} not in {}'.format(val, self.scheme_map.keys()))
-
-    #def calculate_area_needed(self):
-        #return 0, 0

@@ -22,7 +22,7 @@ class TextField(Widget):
                  form,
                  parent,
                  value='',
-                 show_cursor=False,
+                 show_cursor=True,
                  cursor_bold=False,
                  cursor_color='CURSOR',
                  cursor_highlight_color='CURSOR_HIGHLIGHT',
@@ -47,6 +47,7 @@ class TextField(Widget):
 
         self.highlight_whole_widget = highlight_whole_widget  # not used yet
 
+        self.show_cursor = show_cursor
         self.cursor_bold = cursor_bold
         self.cursor_color = cursor_color
         self.cursor_highlight_color = cursor_highlight_color
@@ -113,7 +114,6 @@ class TextField(Widget):
 
     def resize(self):
         self.height = 1
-        self.width = self.max_width
 
     def update(self):
         if self.cursor_position is not None:
@@ -124,7 +124,7 @@ class TextField(Widget):
 
         self.addstr(self.rely, self.relx, self.printable_value())
 
-        if self.editing:
+        if self.editing and self.show_cursor:
             self.print_cursor()
 
         if self.begin_at > 0:

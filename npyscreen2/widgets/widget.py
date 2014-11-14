@@ -146,9 +146,13 @@ class Widget(InputHandler, LinePrinter):
         This is an internal method and should only be modified if one wishes to
         change the fundamental behavior of Widget resizing. If changes
         """
+        #A reminder as to why this is safe and appropriate:
+        #If the Widget was instantiated with preserve_instantiation_dimensions
+        #and provide one or both height and width, then those properties will
+        #be retrieved independent of the internal _height and/or _width. This
+        #introduces inflation as a basic Widget policy unless overridden
+        self.inflate()
         self.resize()
-        #Is there really nothing to do here? It seems like everything is taken
-        #care of by the property logic...
         #TODO: If async happens, when_resized should be a candidate
         self.when_resized()
 
