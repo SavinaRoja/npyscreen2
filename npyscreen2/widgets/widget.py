@@ -29,7 +29,9 @@ class NotEnoughSpaceForWidget(Exception):
     pass
 
 
-class Widget(InputHandler, LinePrinter):
+class Widget(InputHandler,
+             #LinePrinter
+             ):
 
     def __init__(self,
                  form,
@@ -127,11 +129,16 @@ class Widget(InputHandler, LinePrinter):
         #If highlight is set, but colors are not available, then a Widget will
         #will invert the two color values in use
 
-        self.encoding = 'utf-8'
         self.editing = False
         self.interested_in_mouse_even_when_not_editable =\
              interested_in_mouse_even_when_not_editable
 
+        #TODO: Fix unicode, permit ascii
+        #Having unicode trouble in my dev environment and with Python3.4.1, not
+        #sure if problem lies with my code, ncurses build, python build...
+        #Should get this resolved and also introduce the ASCII only mode as it
+        #may be needed on some terminals
+        self.encoding = 'utf-8'
         if global_options.ASCII_ONLY or locale.getpreferredencoding() == 'US-ASCII':
             self._force_ascii = True
         else:
@@ -486,8 +493,8 @@ class Widget(InputHandler, LinePrinter):
             self._feed = self._feed_timeout_wrapper(func)
             self.live = True
         else:
-            self._feed = self._feed_wrapper(func)
             self.live = True
+            self._feed = self._feed_wrapper(func)
 
 #Let's discuss dimension and position policy for Widgets and, by extension,
 #Containers; I'll simply refer to both as Widgets in the following text.
@@ -662,7 +669,6 @@ class Widget(InputHandler, LinePrinter):
         p_y_t, p_y_b, p_x_l, p_x_r = self.parent_borders()
         #If the y is not within the parent's borders, we give up
         if y < p_y_t or y > p_y_b:
-            log.warning('y out of bounds, y={}, x={}'.format(y, x))
             return False
         #if the x is to the right of the parent, we give up
         #if x > p_x_r:
@@ -671,7 +677,7 @@ class Widget(InputHandler, LinePrinter):
         if attr is None:
             attr = self.get_text_attr()
 
-        self.form.curses_pad.addstr(y, x, string[:self.max_width], attr)
+        self.form.curses_pad.addstr(y, x, string[:self.width], attr)
 
     def get_text_attr(self):
         attr = 0

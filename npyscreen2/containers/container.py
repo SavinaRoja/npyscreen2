@@ -489,9 +489,6 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         self.set_coords()
 
         for widget in self.autoables:
-            #widget.max_width = self.max_width - self.left_margin - self.right_margin
-            #widget.max_height = self.max_height - self.top_margin - self.bottom_margin
-
             widget.max_width = self.width - self.left_margin - self.right_margin
             widget.max_height = self.height - self.top_margin - self.bottom_margin
 
@@ -562,7 +559,7 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         c_y_b = self.rely + self.height - self.bottom_margin - 1  # container_y_bottom
         c_x_l = self.relx + self.left_margin  # container_x_left
         c_x_r = self.relx + self.width - self.left_margin - 1  # container_x_right
-        for widget in self.contained:
+        for widget in self.autoables:
             #widget_y_top, widget_y_bottom
             w_y_t, w_y_b = widget.rely, widget.rely + widget.height - 1
             #widget_x_left, widget_x_right

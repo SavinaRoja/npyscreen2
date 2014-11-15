@@ -32,22 +32,17 @@ class BorderBox(Widget):
         self._right = right
         self._use_margins = use_margins
 
-        log.debug('''BorderBox initiatied with: top={0}, bottom={1}, left={2}, \
-right={3}, use_margins={4}'''.format(top, bottom, left, right, use_margins))
-
-    def resize(self):
-        if not self.preserve_instantiation_dimensions:
-            self.inflate()  # Expand to available max dimensions
-        log.debug('''BorderBox: rely={0}, relx={1}, height={2}, width={3}, \
-max_height={4}, max_width={5}'''.format(self.rely, self.relx, self.height,
-                                        self.width, self.max_height,
-                                        self.max_width))
-
     def clear(self, usechar=' '):
         """
         Blank the screen area used by this widget, ready for redrawing
         """
         self.print_borders(blank=True)
+
+    def pre_edit(self):
+        self.highlight = True
+
+    def post_edit(self):
+        self.highlight = False
 
     def update(self):
         self.print_borders()

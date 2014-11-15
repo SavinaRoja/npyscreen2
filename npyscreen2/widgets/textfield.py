@@ -103,14 +103,13 @@ class TextField(Widget):
 
     def printable_value(self):
         if self.editable:
-            max_string_length = self.max_width - 1
+            max_string_length = self.width - 1
         else:
-            max_string_length = self.max_width
+            max_string_length = self.width
         val = self.value[self.begin_at:]
         if len(val) > max_string_length:
             val = val[:max_string_length] + self.runoff_right
         return val
-        #return self.value[self.begin_at:][:max_string_length]
 
     def resize(self):
         self.height = 1
@@ -165,7 +164,6 @@ class TextField(Widget):
                     self.relx + self.cursor_position - self.begin_at,
                     char_under_cur,
                     attr)
-
 
     def h_addch(self, inpt):
         if self.editable:

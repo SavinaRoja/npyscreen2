@@ -19,9 +19,13 @@ class TitledField(Container):
                  title_value='',
                  field_theme='DEFAULT',
                  field_value='',
+                 field_class=TextField,
                  editable=True,
+                 field_feed=None,
                  *args,
                  **kwargs):
+        self.field_feed = field_feed
+        self.field_class = field_class
         super(TitledField, self).__init__(form,
                                           parent,
                                           editable=editable,
@@ -38,15 +42,18 @@ class TitledField(Container):
                                      value=title_value,
                                      editable=False,
                                      width=title_width,
+                                     auto_manage=False,
                                      relx=self.relx + self.left_margin,
                                      rely=self.rely)
 
-        self.field = self.add_widget(TextField,
+        self.field = self.add_widget(self.field_class,
                                      color=field_theme,
-                                     relx=self.relx + self.title.width + self.left_margin,
-                                     rely=self.rely,
+                                     #relx=self.relx + self.title.width + self.left_margin,
+                                     #rely=self.rely,
+                                     auto_manage=False,
                                      editable=True,
-                                     value=field_value)
+                                     value=field_value,
+                                     feed=self.field_feed)
 
     def set_up_exit_condition_handlers(self):
         self.how_exited_handlers = {'down': self.end_edit_with_condition,
@@ -64,12 +71,12 @@ class TitledField(Container):
         self.how_exited = self.contained[self.edit_index].how_exited
 
     def resize(self):
-        self.inflate()
         self.title.multi_set(relx=self.relx + self.left_margin,
                              rely=self.rely,
-                             max_width=self.max_width,
-                             max_height=self.max_height)
+                             max_width=self.width,
+                             max_height=self.height)
+
         self.field.multi_set(relx=self.relx + self.left_margin + self.title.width,
                              rely=self.rely,
-                             max_height=self.max_height)
-        self.field.max_width = self.max_width - self.right_margin - self.title.width
+                             max_height=self.height,
+                             max_width=self.width - self.right_margin - self.title.width)
