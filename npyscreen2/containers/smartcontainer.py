@@ -36,6 +36,7 @@ class SmartContainer(Container):
                  form,
                  parent,
                  scheme='ffdh-top',
+                 hide_partially_visible=True,
                  *args,
                  **kwargs):
 
@@ -47,6 +48,7 @@ class SmartContainer(Container):
 
         super(SmartContainer, self).__init__(form,
                                              parent,
+                                             hide_partially_visible=hide_partially_visible,
                                              *args,
                                              **kwargs)
 
@@ -112,8 +114,8 @@ class SmartContainer(Container):
             for level in levels:
                 if level - widget.height <= end_y:
                     widget.hidden = True
-                    widget.relx = self.relx
-                    widget.rely = self.rely
+                    widget.relx = self.relx - 1
+                    widget.rely = self.rely - 1
                     break
                 widget.hidden = False
                 x_cur = level_x[level]
