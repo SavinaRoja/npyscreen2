@@ -692,7 +692,8 @@ class Widget(InputHandler,
             else:
                 attr |= self.form.theme_manager.find_pair(self, self.color)
         else:
-            attr |= curses.A_REVERSE
+            if self.highlight:
+                attr |= curses.A_REVERSE
         return attr
 
     def hline(self, y, x, ch, n):
