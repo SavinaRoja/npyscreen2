@@ -8,6 +8,8 @@ from . import Widget
 import logging
 log = logging.getLogger('npyscreen2.widgets.gauge')
 
+__all__ = ['Gauge']
+
 
 class Gauge(Widget):
     """
@@ -37,21 +39,24 @@ class Gauge(Widget):
                  #void_char=' ',
                  fill_char=' ',
                  editable=False,  # A typically non-interacting Widget
+                 value=0,
                  *args,
                  **kwargs):
         super(Gauge, self).__init__(form,
                                     parent,
                                     editable=editable,
+                                    value=value,
                                     *args,
                                     **kwargs)
 
         self.horizontal = horizontal
+        self.reverse = reverse
         self.min_val = min_val
         self.max_val = max_val
         self.theme_by_proportion = theme_by_proportion
         self.theme_breakpoints = theme_breakpoints
         self.themes = themes
-        self.void_char = void_char
+        #self.void_char = void_char
         self.fill_char = fill_char
 
     def set_up_handlers(self):
@@ -74,10 +79,10 @@ class Gauge(Widget):
         self.complex_handlers = []
 
     def pre_edit(self):
-        self.highlight = True
+        self.underline = True
 
     def post_edit(self):
-        self.highlight = False
+        self.underline = False
 
     def get_fill_length(self):
         dynamic_range = float(self.max_val) - float(self.min_val)
@@ -94,6 +99,15 @@ class Gauge(Widget):
             fill_len = length
         return fill_len
 
+    def fill_attr(self):
+        attr = curses.A_REVERSE
+        if self.bold:
+            attr |= curses.A_BOLD
+        if self.underline:
+            attr |= curses.A_UNDERLINE
+        attr |= self.form.theme_manager.find_pair(self, self.color)
+        return attr
+
     def update(self):
         fill_length = self.get_fill_length()
 
@@ -102,20 +116,27 @@ class Gauge(Widget):
 
         self.color = None
 
-        #TODO: handle highlighting properly
-
         dynamic_range = self.max_val - self.min_val
         #Break points will be interpreted as a fraction of fill_len
         if self.theme_by_proportion:
-            for i, point in self.theme_breakpoints:
+            for i, point in enumerate(self.theme_breakpoints):
                 if self.value <= dynamic_range * point:
                     self.color = self.themes[i]
+                    break
             if self.color is None:
                 self.color = self.themes[-1]
 
             if self.horizontal:
                 if not self.reverse:
-                    self.addstr(self.rely, self.relx,
-                                self.fill_char * fill_length)
+                    for i in range(self.height):
+                        self.addstr(self.rely + i,
+                                    self.relx,
+                                    self.fill_char * fill_length,
+                                    self.fill_attr())
                 else:
-                    self.addstr(self.rely, self.relx + self.width - fill_length)
+                    for i in range(self.height):
+                        self.addstr(self.rely + i,
+                                    self.relx + self.width - fill_length,
+                                    self.fill_char * fill_length,
+                                    self.fill_attr())
+

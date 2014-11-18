@@ -18,7 +18,8 @@ from .safe_wrapper import wrapper, wrapper_basic
 
 from .app import NPSApp, App, NPSAppAdvanced, AppAdvanced
 
-from .widgets import Widget, NotEnoughSpaceForWidget, BorderBox, TextField
+from .widgets import Widget, NotEnoughSpaceForWidget, BorderBox, TextField, \
+                     Gauge
 
 from .containers import Container, GridContainer, SmartContainer, TitledField
 

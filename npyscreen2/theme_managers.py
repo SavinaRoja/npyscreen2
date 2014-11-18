@@ -28,6 +28,7 @@ class ThemeManager(object):
      #('BLACK_ON_DEFAULT', curses.COLOR_BLACK,      -1),
      #('WHITE_ON_DEFAULT', curses.COLOR_WHITE,      -1),
      ('BLUE_BLACK',       curses.COLOR_BLUE,       curses.COLOR_BLACK),
+     ('BLACK_BLUE',       curses.COLOR_BLACK,      curses.COLOR_BLUE),
      ('CYAN_BLACK',       curses.COLOR_CYAN,       curses.COLOR_BLACK),
      ('GREEN_BLACK',      curses.COLOR_GREEN,      curses.COLOR_BLACK),
      ('MAGENTA_BLACK',    curses.COLOR_MAGENTA,    curses.COLOR_BLACK),
@@ -70,6 +71,8 @@ class ThemeManager(object):
                       'VERYGOOD': 'BLACK_GREEN',
                       'CAUTION': 'YELLOW_BLACK',
                       'CAUTIONHL': 'BLACK_YELLOW',
+                      'COOL': 'BLACK_BLUE',
+                      'COOLINVERSE': 'BLUE_BLACK',
                       'TEST': 'BLUE_YELLOW',}
 
     def __init__(self):
