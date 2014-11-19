@@ -64,10 +64,8 @@ class GridContainer(Container):
         else:
             return col_index * self.rows + row_index
 
-    def resize(self):
-        #GridContainer expands to fill its entire allocated space
-        #self.height = self.max_height
-        #self.width = self.max_width
+    def _resize(self):
+        super(GridContainer, self)._resize()
 
         self.resize_grid_coords()
 
@@ -99,7 +97,6 @@ class GridContainer(Container):
             self.grid[col][row] = widget
 
     def resize_grid_coords(self):
-
         def apportion(start, stop, n):
             locs = []
             cell_size = (stop - start + 1) / n
@@ -109,9 +106,9 @@ class GridContainer(Container):
 
         #Define the start and stop locations
         rely_start = self.rely + self.top_margin
-        rely_stop = self.rely + self.height - self.bottom_margin
+        rely_stop = self.rely + self.height - self.bottom_margin -1
         relx_start = self.relx + self.left_margin
-        relx_stop = self.relx + self.width - self.right_margin
+        relx_stop = self.relx + self.width - self.right_margin - 1
 
         relys = apportion(rely_start, rely_stop, self.rows)
         relxs = apportion(relx_start, relx_stop, self.cols)
@@ -125,17 +122,17 @@ class GridContainer(Container):
         for col in range(self.cols):
             for row in range(self.rows):
                 if row == (self.rows - 1):  # Last row
-                    height = (self.rely + self.max_height) -\
+                    height = (self.rely + self.height) -\
                              (self.grid_coords[col][row][0] + self.bottom_margin)
                 else:
                     height = self.grid_coords[col][row + 1][0] - self.grid_coords[col][row][0]
 
                 if col == (self.cols - 1):  # Final column
-                    width = (self.relx + self.max_width) -\
+                    width = (self.relx + self.width) -\
                             (self.grid_coords[col][row][1] + self.right_margin)
                 else:
                     width = self.grid_coords[col + 1][row][1] - self.grid_coords[col][row][1]
-
+                log.debug('grid col={}, row={}, height={}, width={}'.format(col, row, height, width))
                 self.grid_dim_hw[col][row] = [height, width]
 
     def set_up_exit_condition_handlers(self):
@@ -146,10 +143,10 @@ class GridContainer(Container):
         exit codes in a grid.
         """
         super(GridContainer, self).set_up_exit_condition_handlers()
-        self.how_exited_handlers.update({'down': self.find_next_editable_down,
-                                         'up': self.find_next_editable_up,
-                                         'right': self.find_next_editable_right,
-                                         'left': self.find_next_editable_left,
+        self.how_exited_handlers.update({'down': self.exit_down_handler,
+                                         'up': self.exit_up_handler,
+                                         'right': self.exit_right_handler,
+                                         'left': self.exit_left_handler,
                                          })
 
     def exit_down_handler(self):
@@ -199,6 +196,8 @@ class GridContainer(Container):
                 widget = self.autoables[flat]
             except IndexError:
                 continue
+            except StopIteration:
+                continue
 
             if widget.editable:
                 self.grid_edit_indices = (cur_col, row)
@@ -212,6 +211,8 @@ class GridContainer(Container):
             try:
                 widget = self.autoables[flat]
             except IndexError:
+                continue
+            except StopIteration:
                 continue
 
             if widget.editable:
@@ -227,6 +228,8 @@ class GridContainer(Container):
                 widget = self.autoables[flat]
             except IndexError:
                 continue
+            except StopIteration:
+                continue
 
             if widget.editable:
                 self.grid_edit_indices = (col, cur_row)
@@ -240,6 +243,8 @@ class GridContainer(Container):
             try:
                 widget = self.autoables[flat]
             except IndexError:
+                continue
+            except StopIteration:
                 continue
 
             if widget.editable:

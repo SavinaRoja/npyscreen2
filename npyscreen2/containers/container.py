@@ -135,7 +135,6 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         log.debug('Widget/Container added: contained={0}'.format(self.contained))
 
         widget_proxy = weakref.proxy(widget)
-
         if widget_id is not None:
             self.contained_map[widget_id] = widget_proxy
         else:
@@ -196,10 +195,6 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
         """
         return self.rely + self.top_margin, self.relx + self.left_margin
 
-    #def set_up_handlers(self):
-        #self.complex_handlers = []
-        #self.handlers = {}
-
     def set_up_exit_condition_handlers(self):
         """
         Set up handlers for what to do when widgets exit.
@@ -229,7 +224,6 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
                                     'ascend': self.activate_container_edit,
                                     'descend': self.deactivate_container_edit,
                                     }
-        log.debug('how_exit_handlers initialized: {0}'.format(self.how_exited_handlers))
 
     def safe_get_mouse_event(self):
         try:
@@ -239,7 +233,6 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
             return None
 
     def get_and_use_mouse_event(self):
-        log.debug('{0}.get_and_use_mouse_event called'.format(self.__class__))
         mouse_event = self.safe_get_mouse_event()
         if mouse_event:
             self.use_mouse_event(mouse_event)
@@ -377,14 +370,9 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
                 return i
         return None  # None represents an unset editing selection
 
-    #TODO: Develop distinct upper and lower editing loops to handle
-    #self.container_select, along with exit handlers for ascent and descent so
-    #that it's easier to treat Containers atomically like Widgets
     def edit_loop(self):
         self.display()
         self.edit_index = self.enter_edit_loop()
-        log.debug('{0}.enter_edit_loop returned: {1}'.format(self.__class__,
-                                                             self.edit_index))
 
         #Should correspond to no editable Widgets and the Container not selected
         #for editing as a Widget
@@ -400,17 +388,17 @@ kwargs={7}'''.format(widget_class, widget_id, rely, relx, max_height,
                 self.handle_exiting_widgets(self.how_exited)
                 continue
 
+            if self.edit_index is None:
+                continue
             #Do check to get editing widget on screen
             selected = self.contained[self.edit_index]
             self.bring_into_view()
-            log.debug('selected for editing: {0}'.format(selected))
             self.while_editing(selected)
             if not self.editing:  # Because this may change in while_editing
                 break
             selected.edit()
             selected.display()
 
-            log.debug('After editing, how_exited={0}'.format(selected.how_exited))
             self.handle_exiting_widgets(selected.how_exited)
 
     def while_editing(self, widget_ref):

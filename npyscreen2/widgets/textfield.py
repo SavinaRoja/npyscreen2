@@ -47,6 +47,7 @@ class TextField(Widget):
 
         self.highlight_whole_widget = highlight_whole_widget  # not used yet
 
+        self.start_cursor_at_end = start_cursor_at_end
         self.show_cursor = show_cursor
         self.cursor_bold = cursor_bold
         self.cursor_color = cursor_color
@@ -59,40 +60,42 @@ class TextField(Widget):
         self.update()
 
     def set_up_handlers(self):
-            super(TextField, self).set_up_handlers()
+        super(TextField, self).set_up_handlers()
 
-            #For OS X
-            #del_key = curses.ascii.alt('~')
+        #For OS X
+        #del_key = curses.ascii.alt('~')
 
-            self.handlers.update({curses.KEY_LEFT: self.h_cursor_left,
-                                  curses.KEY_RIGHT: self.h_cursor_right,
-                                  curses.KEY_DC: self.h_delete_right,
-                                  curses.ascii.DEL: self.h_delete_left,
-                                  curses.ascii.BS: self.h_delete_left,
-                                  curses.KEY_BACKSPACE: self.h_delete_left,
-                                  curses.KEY_HOME: self.h_home,
-                                  curses.KEY_END: self.h_end,
-                                  curses.ascii.NL: self.h_exit_down,
-                                  curses.ascii.CR: self.h_exit_down,
-                                  curses.ascii.TAB: self.h_exit_down,
-                                  #mac os x curses reports DEL as escape oddly
-                                  #no solution yet
-                                  "^K": self.h_erase_right,
-                                  "^U": self.h_erase_left,
-                                  })
+        self.handlers.update({curses.KEY_LEFT: self.h_cursor_left,
+                              curses.KEY_RIGHT: self.h_cursor_right,
+                              curses.KEY_DC: self.h_delete_right,
+                              curses.ascii.DEL: self.h_delete_left,
+                              curses.ascii.BS: self.h_delete_left,
+                              curses.KEY_BACKSPACE: self.h_delete_left,
+                              curses.KEY_HOME: self.h_home,
+                              curses.KEY_END: self.h_end,
+                              curses.ascii.NL: self.h_exit_down,
+                              curses.ascii.CR: self.h_exit_down,
+                              curses.ascii.TAB: self.h_exit_down,
+                              #mac os x curses reports DEL as escape oddly
+                              #no solution yet
+                              "^K": self.h_erase_right,
+                              "^U": self.h_erase_left,
+                              })
 
-            self.complex_handlers.extend((
-                            (self.t_input_isprint, self.h_addch),
-                            # (self.t_is_ck, self.h_erase_right),
-                            # (self.t_is_cu, self.h_erase_left),
+        self.complex_handlers.extend((
+                        (self.t_input_isprint, self.h_addch),
+                        # (self.t_is_ck, self.h_erase_right),
+                        # (self.t_is_cu, self.h_erase_left),
                             ))
 
     def _pre_edit(self):
         super(TextField, self)._pre_edit()
         #self.bold = True
         #Explicitly setting the behavior for an unset cursor_position
-        if self.cursor_position is None:
+        if self.cursor_position is None and self.start_cursor_at_end:
             self.cursor_position = len(self.value)
+        else:
+            self.cursor_position = 0
 
     def _post_edit(self):
         super(TextField, self)._post_edit()
@@ -102,7 +105,10 @@ class TextField(Widget):
         self.begin_at = 0
 
     def printable_value(self):
-        if self.editable:
+        #This was based on the assumption that the cursor was determined by edit
+        #if self.editable:
+            #max_string_length = self.width - 1
+        if self.show_cursor:
             max_string_length = self.width - 1
         else:
             max_string_length = self.width

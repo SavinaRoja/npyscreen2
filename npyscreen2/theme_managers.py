@@ -37,7 +37,7 @@ class ThemeManager(object):
      ('BLACK_RED',        curses.COLOR_BLACK,      curses.COLOR_RED),
      ('BLACK_GREEN',      curses.COLOR_BLACK,      curses.COLOR_GREEN),
      ('BLACK_YELLOW',     curses.COLOR_BLACK,      curses.COLOR_YELLOW),
-
+     ('WHITE_BLUE',       curses.COLOR_WHITE,      curses.COLOR_BLUE),
      ('BLUE_WHITE',       curses.COLOR_BLUE,       curses.COLOR_WHITE),
      ('CYAN_WHITE',       curses.COLOR_CYAN,       curses.COLOR_WHITE),
      ('GREEN_WHITE',      curses.COLOR_GREEN,      curses.COLOR_WHITE),
@@ -73,7 +73,9 @@ class ThemeManager(object):
                       'CAUTIONHL': 'BLACK_YELLOW',
                       'COOL': 'BLACK_BLUE',
                       'COOLINVERSE': 'BLUE_BLACK',
-                      'TEST': 'BLUE_YELLOW',}
+                      'TEST': 'BLUE_YELLOW',
+                      'BUTTON': 'WHITE_BLUE',
+                      'BUTTON_HIGHLIGHT': 'BLUE_WHITE'}
 
     def __init__(self):
         #curses.use_default_colors()
