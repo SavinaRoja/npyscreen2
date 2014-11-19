@@ -65,8 +65,6 @@ class GridContainer(Container):
             return col_index * self.rows + row_index
 
     def _resize(self):
-        super(GridContainer, self)._resize()
-
         self.resize_grid_coords()
 
         #GridContainer sets rely-relx and sets max height and width
@@ -74,6 +72,8 @@ class GridContainer(Container):
             col, row = self.convert_flat_index_to_grid(index)
             widget.rely, widget.relx = self.grid_coords[col][row]
             widget.max_height, widget.max_width = self.grid_dim_hw[col][row]
+
+        super(GridContainer, self)._resize()
 
     def initiate_grid(self):
         """
@@ -106,7 +106,7 @@ class GridContainer(Container):
 
         #Define the start and stop locations
         rely_start = self.rely + self.top_margin
-        rely_stop = self.rely + self.height - self.bottom_margin -1
+        rely_stop = self.rely + self.height - self.bottom_margin - 1
         relx_start = self.relx + self.left_margin
         relx_stop = self.relx + self.width - self.right_margin - 1
 
