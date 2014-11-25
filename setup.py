@@ -21,7 +21,7 @@ setup(name='npyscreen2',
       author='Paul Barton',
       author_email='pablo.barton@gmail.com',
       url='https://github.com/SavinaRoja',
-      packages=['npyscreen2'],
+      packages=['npyscreen2', 'npyscreen2.widgets', 'npyscreen2.forms', 'npyscreen2.containers'],
       license='http://www.gnu.org/licenses/gpl-3.0.html',
       keywords='npyscreen,',
 )
